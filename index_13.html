@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>فلك — حياتك اليومية، كلها في مكان واحد</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:linear-gradient(160deg, #FFF8E7 0%, #FFE7B8 35%, #FFDCAE 70%, #FFCF9E 100%);
+    --surface:rgba(255,255,255,0.55);
+    --surface-2:rgba(255,255,255,0.78);
+    --fog:#262B4E;
+    --fog-dim:#6B4E33;
+    --amber:#E8641C;
+    --mint:#14B8A6;
+    --rose:#FF5D8F;
+    --line:rgba(38,43,78,0.10);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--fog);
+    font-family:'IBM Plex Sans Arabic', sans-serif;
+    line-height:1.7;
+    min-height:100vh;
+  }
+  h1,h2,h3,h4,.display{ font-family:'Tajawal', sans-serif; }
+  .mono{ font-family:'JetBrains Mono', monospace; }
+  button{ font-family:inherit; cursor:pointer; }
+  input,select{ font-family:inherit; }
+
+  .screen{ display:none; min-height:100vh; }
+  .screen.active{ display:block; }
+
+  /* ===== Top bar (shared) ===== */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 48px;
+    border-bottom:1px solid var(--line);
+  }
+  @media (max-width:700px){ .topbar{ padding:16px 20px; } }
+  .brand{ font-weight:900; font-size:20px; }
+  .brand span{ color:var(--amber); }
+  .brand-block{ display:flex; flex-direction:column; gap:2px; }
+  .brand-tagline{ font-size:11.5px; color:var(--fog-dim); font-weight:500; }
+  @media (max-width:600px){ .brand-tagline{ display:none; } }
+
+  /* ===== LANDING ===== */
+  .landing-hero{
+    max-width:720px; margin:0 auto; text-align:center;
+    padding:100px 24px 60px;
+  }
+  .kicker{
+    font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--mint);
+    letter-spacing:0.12em; margin-bottom:20px;
+  }
+  .landing-hero h1{ font-size:48px; font-weight:900; margin:0 0 20px; line-height:1.2; }
+  .landing-hero h1 span{ color:var(--amber); }
+  .landing-hero p{ font-size:17px; color:var(--fog-dim); margin-bottom:36px; }
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:14px 28px; border-radius:10px; border:none;
+    font-weight:700; font-size:15px;
+    transition:transform .15s ease, opacity .15s ease;
+  }
+  .btn:hover{ transform:translateY(-1px); }
+  .btn-primary{ background:var(--amber); color:#1B1200; }
+  .btn-ghost{ background:transparent; color:var(--fog); border:1px solid var(--line); }
+  .btn-mint{ background:var(--mint); color:#08261D; }
+
+  .landing-feats{
+    max-width:960px; margin:0 auto; padding:20px 24px 100px;
+    display:grid; grid-template-columns:repeat(3,1fr); gap:20px;
+  }
+  @media (max-width:760px){ .landing-feats{ grid-template-columns:1fr; } }
+  .feat-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:26px;
+  }
+  .feat-card .ic{ font-size:24px; margin-bottom:12px; display:block; }
+  .feat-card h4{ margin:0 0 8px; font-size:16px; }
+  .feat-card p{ margin:0; font-size:13.5px; color:var(--fog-dim); }
+
+  /* ===== ONBOARDING ===== */
+  .onboard-wrap{ max-width:720px; margin:0 auto; padding:70px 24px; }
+  .onboard-wrap h2{ font-size:28px; margin-bottom:6px; }
+  .onboard-wrap .sub{ color:var(--fog-dim); margin-bottom:36px; font-size:15px; }
+  .role-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-bottom:36px; }
+  @media (max-width:600px){ .role-grid{ grid-template-columns:1fr; } }
+  .role-card{
+    background:var(--surface); border:1.5px solid var(--line); border-radius:12px;
+    padding:20px; display:flex; align-items:center; gap:14px;
+    transition:all .15s ease; user-select:none;
+  }
+  .role-card:hover{ border-color:rgba(232,100,28,0.4); }
+  .role-card.selected{ border-color:var(--amber); background:rgba(232,100,28,0.08); }
+  .role-card .ic{ font-size:26px; }
+  .role-card .name{ font-weight:700; font-size:15px; }
+  .role-card .desc{ font-size:12.5px; color:var(--fog-dim); }
+  .role-check{
+    margin-right:auto; width:20px; height:20px; border-radius:6px;
+    border:1.5px solid var(--fog-dim); display:flex; align-items:center; justify-content:center;
+    font-size:12px; flex-shrink:0;
+  }
+  .role-card.selected .role-check{ background:var(--amber); border-color:var(--amber); color:#1B1200; }
+
+  /* ===== DASHBOARD ===== */
+  .dash-wrap{ max-width:920px; margin:0 auto; padding:36px 24px 80px; }
+  .dash-head{ display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:14px;}
+  .dash-head h2{ font-size:26px; margin:0 0 4px; }
+  .dash-head .sub{ color:var(--fog-dim); font-size:14px; margin:0; }
+
+  .group-label{
+    font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--fog-dim);
+    letter-spacing:0.08em; text-transform:uppercase; margin:28px 0 12px;
+  }
+  .reminder-list{ display:flex; flex-direction:column; gap:10px; }
+  .reminder-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:16px 18px; display:flex; align-items:center; gap:14px;
+  }
+  .urgency-dot{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .urgency-dot.urgent{ background:var(--rose); }
+  .urgency-dot.soon{ background:var(--amber); }
+  .urgency-dot.later{ background:var(--mint); }
+  .r-info{ flex-grow:1; min-width:0; }
+  .r-title{ font-weight:700; font-size:14.5px; margin-bottom:2px; }
+  .r-meta{ font-size:12.5px; color:var(--fog-dim); }
+  .r-cat{
+    font-size:11px; padding:4px 10px; border-radius:20px; border:1px solid var(--line); color:var(--fog-dim);
+    flex-shrink:0; white-space:nowrap;
+  }
+  .r-days{ font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--fog-dim); flex-shrink:0; width:70px; text-align:left; }
+  .r-del{
+    background:transparent; border:none; color:var(--fog-dim); font-size:16px; flex-shrink:0; opacity:0.5;
+  }
+  .r-del:hover{ opacity:1; color:var(--rose); }
+
+  .empty{ text-align:center; padding:40px 20px; color:var(--fog-dim); font-size:14px; }
+
+  /* ===== INSIGHTS (Layer 2) ===== */
+  .insights{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:8px;
+  }
+  @media (max-width:700px){ .insights{ grid-template-columns:1fr; } }
+  .insight-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:18px 20px;
+  }
+  .insight-label{ font-size:12px; color:var(--fog-dim); margin-bottom:8px; }
+  .insight-value{ font-family:'Tajawal',sans-serif; font-weight:900; font-size:24px; }
+  .insight-value .unit{ font-size:13px; font-weight:400; color:var(--fog-dim); font-family:'IBM Plex Sans Arabic',sans-serif; }
+
+  .advice-banner{
+    display:flex; align-items:flex-start; gap:14px;
+    background:linear-gradient(160deg, var(--surface), var(--surface-2));
+    border:1px solid rgba(20,184,166,0.25);
+    border-radius:12px; padding:18px 20px; margin-bottom:28px;
+  }
+  .advice-banner .ic{ font-size:20px; flex-shrink:0; }
+  .advice-banner .txt{ font-size:14px; color:var(--fog); }
+  .advice-banner .txt b{ color:var(--mint); }
+
+  .r-use-toggle{
+    font-size:11.5px; padding:5px 10px; border-radius:20px; border:1px solid var(--line);
+    color:var(--fog-dim); background:transparent; flex-shrink:0; white-space:nowrap;
+  }
+  .r-use-toggle.unused{ border-color:var(--rose); color:var(--rose); background:rgba(255,93,143,0.08); }
+
+  .reminder-card.unused-sub{ border-color:rgba(255,93,143,0.35); }
+  .r-suggest{
+    font-size:12.5px; color:var(--rose); margin-top:4px;
+  }
+
+  .fab{
+    position:fixed; bottom:28px; left:28px;
+    background:var(--amber); color:#1B1200; border:none; border-radius:30px;
+    padding:15px 24px; font-weight:700; font-size:14.5px;
+    box-shadow:0 8px 24px rgba(232,100,28,0.25);
+    display:flex; align-items:center; gap:8px;
+  }
+
+  /* ===== MODAL ===== */
+  .overlay{
+    display:none; position:fixed; inset:0; background:rgba(38,43,78,0.32);
+    align-items:center; justify-content:center; z-index:50; padding:20px;
+  }
+  .overlay.active{ display:flex; }
+  .modal{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:28px; width:100%; max-width:440px;
+  }
+  .modal h3{ margin:0 0 20px; font-size:19px; }
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-size:13px; color:var(--fog-dim); margin-bottom:6px; }
+  .field input, .field select{
+    width:100%; padding:11px 14px; border-radius:8px; border:1px solid var(--line);
+    background:var(--surface-2); color:var(--fog); font-size:14px;
+  }
+  .field input:focus, .field select:focus{ outline:2px solid var(--amber); outline-offset:1px; }
+  .modal-actions{ display:flex; gap:10px; margin-top:22px; }
+  .modal-actions .btn{ flex:1; justify-content:center; }
+
+  .top-actions{ display:flex; gap:10px; align-items:center; }
+
+  /* ===== FAMILY SPACE (Layer 4) ===== */
+  .family-wrap{ max-width:820px; margin:0 auto; padding:36px 24px 100px; }
+  .family-head{ display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:14px; }
+  .family-head h2{ font-size:26px; margin:0 0 4px; }
+  .family-head .sub{ color:var(--fog-dim); font-size:14px; margin:0; }
+
+  .member-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:32px; }
+  @media (max-width:700px){ .member-grid{ grid-template-columns:1fr 1fr; } }
+  @media (max-width:460px){ .member-grid{ grid-template-columns:1fr; } }
+  .member-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:18px; text-align:center;
+  }
+  .member-avatar{
+    width:44px; height:44px; border-radius:50%; margin:0 auto 10px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Tajawal',sans-serif; font-weight:900; font-size:16px;
+    background:var(--surface-2); color:var(--amber);
+  }
+  .member-name{ font-weight:700; font-size:14px; margin-bottom:2px; }
+  .member-role{ font-size:12px; color:var(--fog-dim); }
+  .member-card.add-member{
+    border-style:dashed; cursor:pointer; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; color:var(--fog-dim);
+  }
+  .member-card.add-member:hover{ border-color:rgba(232,100,28,0.4); color:var(--fog); }
+  .member-card.add-member .plus{ font-size:22px; margin-bottom:6px; }
+
+  .invite-box{
+    display:flex; align-items:center; gap:10px;
+    background:var(--surface-2); border:1px solid var(--line); border-radius:10px;
+    padding:12px 16px; margin-bottom:32px; flex-wrap:wrap;
+  }
+  .invite-box .link{ font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--mint); flex-grow:1; }
+  .invite-box .btn{ padding:8px 16px; font-size:13px; }
+
+  .shared-list{ display:flex; flex-direction:column; gap:10px; }
+  .shared-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:16px 18px; display:flex; align-items:center; gap:14px;
+  }
+  .shared-card .r-title{ font-weight:700; font-size:14.5px; margin-bottom:2px; }
+  .shared-card .r-meta{ font-size:12.5px; color:var(--fog-dim); }
+  .shared-with{ display:flex; gap:-4px; margin-right:auto; }
+  .r-share-btn{
+    background:transparent; border:1px solid var(--line); color:var(--fog-dim);
+    border-radius:20px; padding:6px 14px; font-size:12px; flex-shrink:0;
+  }
+  .r-share-btn.shared{ border-color:var(--mint); color:var(--mint); background:rgba(20,184,166,0.08); }
+
+  /* ===== SUBSCRIPTION (Plans) ===== */
+  .sub-wrap{ max-width:920px; margin:0 auto; padding:36px 24px 100px; }
+  .sub-head{ margin-bottom:8px; }
+  .sub-head h2{ font-size:26px; margin:0 0 4px; }
+  .sub-head .sub{ color:var(--fog-dim); font-size:14px; margin:0 0 32px; }
+
+  .plan-badge{
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--surface-2); border:1px solid var(--line);
+    border-radius:20px; padding:6px 14px; font-size:12.5px; color:var(--fog-dim);
+  }
+  .plan-badge .dot{ width:7px; height:7px; border-radius:50%; background:var(--mint); }
+
+  .plan-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-top:24px; }
+  @media (max-width:980px){ .plan-grid{ grid-template-columns:1fr 1fr; } }
+  @media (max-width:600px){ .plan-grid{ grid-template-columns:1fr; } }
+  .plan-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:24px 22px; display:flex; flex-direction:column; position:relative;
+  }
+  .plan-card.current{ border-color:var(--mint); }
+  .plan-card.featured{ border-color:var(--amber); background:linear-gradient(160deg, rgba(255,255,255,0.65), rgba(255,214,184,0.55)); }
+  .plan-current-tag{
+    position:absolute; top:-11px; right:20px;
+    background:var(--mint); color:#08261D; font-size:11px; font-weight:700;
+    padding:3px 12px; border-radius:12px;
+  }
+  .plan-name{ font-weight:700; font-family:'Tajawal',sans-serif; font-size:18px; margin-bottom:6px; }
+  .plan-price{ font-size:30px; font-weight:900; font-family:'Tajawal',sans-serif; margin-bottom:18px; }
+  .plan-price .unit{ font-size:13px; color:var(--fog-dim); font-weight:400; font-family:'IBM Plex Sans Arabic',sans-serif; }
+  .plan-card ul{ list-style:none; padding:0; margin:0 0 22px; flex-grow:1; }
+  .plan-card li{ font-size:13.5px; color:var(--fog-dim); padding:7px 0; display:flex; gap:8px; }
+  .plan-card li::before{ content:"✓"; color:var(--mint); flex-shrink:0; }
+  .plan-card .btn{ justify-content:center; width:100%; }
+  .plan-card .btn:disabled{ opacity:0.4; cursor:default; }
+
+  /* ===== AUTH (Login/Signup) ===== */
+  .auth-wrap{ max-width:420px; margin:0 auto; padding:80px 24px; }
+  .auth-tabs{ display:flex; gap:6px; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:5px; margin-bottom:28px; }
+  .auth-tab{
+    flex:1; text-align:center; padding:10px; border-radius:8px; font-size:14px; font-weight:700;
+    background:transparent; border:none; color:var(--fog-dim);
+  }
+  .auth-tab.active{ background:var(--amber); color:#1B1200; }
+  .auth-title{ font-size:24px; margin:0 0 6px; }
+  .auth-sub{ color:var(--fog-dim); font-size:14px; margin-bottom:28px; }
+  .auth-error{
+    display:none; background:rgba(255,93,143,0.1); border:1px solid rgba(255,93,143,0.3);
+    color:var(--rose); border-radius:8px; padding:10px 14px; font-size:13.5px; margin-bottom:16px;
+  }
+  .auth-error.active{ display:block; }
+  .auth-loading{ opacity:0.6; pointer-events:none; }
+  .user-chip{
+    display:flex; align-items:center; gap:8px; font-size:13px; color:var(--fog-dim);
+    padding:6px 12px; border:1px solid var(--line); border-radius:20px;
+  }
+
+  .pw-strength-meter{
+    width:100%; height:5px; border-radius:4px; background:var(--surface-2); overflow:hidden; margin-bottom:6px;
+  }
+  .pw-strength-bar{
+    height:100%; width:0%; border-radius:4px; background:var(--line);
+    transition:width .2s ease, background .2s ease;
+  }
+  .pw-strength-label{ font-size:12px; color:var(--fog-dim); margin-bottom:8px; }
+
+  /* ===== ORBIT HERO VISUAL ===== */
+  .orbit-wrap{
+    position:relative;
+    width:100%;
+    max-width:460px;
+    aspect-ratio:1/1;
+    margin:30px auto 10px;
+  }
+  .orbit-ring{
+    position:absolute;
+    border:1px solid var(--line);
+    border-radius:50%;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+  }
+  .orbit-r1{ width:100%; height:100%; animation: orbit-spin 60s linear infinite; }
+  .orbit-r2{ width:72%; height:72%; animation: orbit-spin 40s linear infinite reverse; }
+  .orbit-r3{ width:42%; height:42%; }
+  @media (prefers-reduced-motion: reduce){
+    .orbit-r1, .orbit-r2 { animation: none; }
+  }
+  @keyframes orbit-spin{ from{transform:translate(-50%,-50%) rotate(0deg);} to{transform:translate(-50%,-50%) rotate(360deg);} }
+  .orbit-core{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:80px; height:80px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, rgba(255,255,255,0.9), rgba(255,224,196,0.65));
+    border:1px solid rgba(232,100,28,0.4);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Tajawal',sans-serif; font-weight:900; font-size:14px;
+    color:var(--fog);
+    box-shadow:0 0 40px rgba(232,100,28,0.15);
+    z-index:3;
+  }
+  .orbit-node{
+    position:absolute;
+    padding:6px 13px;
+    border-radius:20px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    font-size:12px;
+    white-space:nowrap;
+    display:flex; align-items:center; gap:6px;
+    z-index:2;
+  }
+  .orbit-node .dot{ width:6px;height:6px;border-radius:50%; }
+  .orbit-n1{ top:2%; left:50%; transform:translate(-50%,0); }
+  .orbit-n2{ top:24%; right:0%; }
+  .orbit-n3{ bottom:24%; right:2%; }
+  .orbit-n4{ bottom:2%; left:50%; transform:translate(-50%,0); }
+  .orbit-n5{ bottom:24%; left:2%; }
+  .orbit-n6{ top:24%; left:0%; }
+
+  /* ===== PAGE NAV (forward/back) ===== */
+  .page-nav{
+    position:fixed; bottom:24px; right:24px; z-index:40;
+    display:flex; gap:8px;
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:30px; padding:6px; box-shadow:0 8px 24px rgba(0,0,0,0.25);
+  }
+  .page-nav button{
+    display:flex; align-items:center; gap:6px;
+    background:transparent; border:none; color:var(--fog);
+    padding:10px 16px; border-radius:24px; font-size:13.5px; font-weight:700;
+    transition:background .15s ease, opacity .15s ease;
+  }
+  .page-nav button:hover:not(:disabled){ background:var(--surface-2); }
+  .page-nav button:disabled{ opacity:0.3; cursor:default; }
+  .page-nav .step-dots{ display:flex; align-items:center; gap:5px; padding:0 4px; }
+  .page-nav .step-dot{ width:6px; height:6px; border-radius:50%; background:var(--line); }
+  .page-nav .step-dot.active{ background:var(--amber); }
+  @media (max-width:600px){
+    .page-nav{ right:12px; bottom:12px; }
+    .page-nav button{ padding:9px 12px; font-size:12.5px; }
+  }
+
+  /* ===== GLASS EFFECT — transparent surfaces over the sunrise backdrop ===== */
+  body{ background-attachment:fixed; }
+  .feat-card, .role-card, .reminder-card, .member-card, .shared-card,
+  .plan-card, .modal, .insight-card, .advice-banner, .price-card,
+  .topbar, .page-nav, .auth-tabs, .invite-box{
+    backdrop-filter:blur(18px) saturate(1.4);
+    -webkit-backdrop-filter:blur(18px) saturate(1.4);
+    box-shadow:0 8px 30px rgba(38,43,78,0.07);
+  }
+  .topbar, .page-nav{ background:rgba(255,255,255,0.45); }
+
+  /* ===== DECORATIVE BACKGROUND ICONS ===== */
+  .screen{ position:relative; z-index:1; }
+  .bg-decor{
+    position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none;
+  }
+  .bg-decor span{
+    position:absolute; opacity:0.16; line-height:1;
+    animation:bg-float 20s ease-in-out infinite;
+  }
+  .deco-icon{ color:var(--fog); }
+  .deco-icon svg{ width:100%; height:auto; display:block; }
+  .deco-constellation{
+    position:absolute; inset:0; width:100%; height:100%;
+    opacity:0.14; color:var(--amber);
+    fill:currentColor; stroke:currentColor; stroke-width:0.6;
+  }
+  @keyframes bg-float{
+    0%, 100%{ transform:translateY(0) rotate(var(--r, 0deg)); }
+    50%{ transform:translateY(-18px) rotate(var(--r, 0deg)); }
+  }
+  @media (prefers-reduced-motion: reduce){ .bg-decor span{ animation:none; } }
+</style>
+</head>
+<body>
+
+<!-- ===================== DECORATIVE BACKGROUND ICONS ===================== -->
+<div class="bg-decor" aria-hidden="true">
+  <span class="deco-icon" style="top:6%; right:8%; width:100px; --r:-6deg; animation-delay:0s;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M6 2h9l3 3v17H6z"/><path d="M15 2v3h3"/><path d="M8 12h8M8 16h8M8 8h4"/></svg>
+  </span>
+  <span class="deco-icon" style="top:20%; left:6%; width:82px; --r:8deg; animation-delay:2s;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M3 13l2-5a2 2 0 012-1h10a2 2 0 012 1l2 5"/><path d="M3 13h18v4a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1H6v1a1 1 0 01-1 1H4a1 1 0 01-1-1z"/><circle cx="7.5" cy="17.5" r="1.4"/><circle cx="16.5" cy="17.5" r="1.4"/></svg>
+  </span>
+  <span class="deco-icon" style="top:40%; right:4%; width:90px; --r:5deg; animation-delay:1s;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>
+  </span>
+  <span class="deco-icon" style="bottom:22%; left:9%; width:100px; --r:-5deg; animation-delay:3s;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="7" r="3"/><path d="M2 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><circle cx="17" cy="8" r="2.3"/><path d="M15 21v-1a3 3 0 013-3h1a3 3 0 013 3v1"/></svg>
+  </span>
+  <span class="deco-icon" style="bottom:8%; right:14%; width:80px; --r:7deg; animation-delay:1.5s;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M12 21s-7-4.5-9.5-9C.5 8 2 4 6 4c2 0 4 1.5 6 4 2-2.5 4-4 6-4 4 0 5.5 4 3.5 8-2.5 4.5-9.5 9-9.5 9z"/></svg>
+  </span>
+  <span class="deco-icon" style="top:60%; left:3%; width:68px; --r:-9deg; animation-delay:2.5s;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M6 8a6 6 0 0112 0c0 4 1.5 6 2 7H4c.5-1 2-3 2-7z"/><path d="M9 19a3 3 0 006 0"/></svg>
+  </span>
+  <span class="deco-icon" style="bottom:40%; right:30%; width:64px; --r:4deg; animation-delay:0.5s;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="8" cy="14" r="0.9" fill="currentColor" stroke="none"/><circle cx="12" cy="14" r="0.9" fill="currentColor" stroke="none"/><circle cx="16" cy="14" r="0.9" fill="currentColor" stroke="none"/></svg>
+  </span>
+  <span class="deco-icon" style="top:80%; left:30%; width:66px; --r:-3deg; animation-delay:3.5s;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 00-3.5 10.9c.5.4.8 1 .8 1.6h5.4c0-.6.3-1.2.8-1.6A6 6 0 0012 3z"/></svg>
+  </span>
+
+  <svg class="deco-constellation" viewBox="0 0 400 400" preserveAspectRatio="none">
+    <circle cx="60" cy="90" r="2.5"/>
+    <circle cx="140" cy="60" r="1.8"/>
+    <circle cx="120" cy="150" r="2"/>
+    <circle cx="320" cy="220" r="2.5"/>
+    <circle cx="260" cy="280" r="1.8"/>
+    <circle cx="350" cy="320" r="2"/>
+    <path d="M60 90 L140 60 L120 150 Z" />
+    <path d="M320 220 L260 280 L350 320 Z" />
+  </svg>
+</div>
+
+<!-- ===================== SCREEN 1: LANDING ===================== -->
+<div class="screen active" id="screen-landing">
+  <div class="topbar">
+    <div class="brand-block">
+      <div class="brand">فلك</div>
+      <div class="brand-tagline">مساعد ذكي لتنظيم التزامات حياتك اليومية</div>
+    </div>
+    <button class="btn btn-ghost" onclick="showAuth('login')">تسجيل الدخول</button>
+  </div>
+
+  <div class="landing-hero">
+    <div class="kicker">مساعد ذكي لأمور الحياة اليومية</div>
+    <h1>حياتك اليومية،<br><span>كلها في فلك واحد.</span></h1>
+    <p>الوثائق، الاشتراكات، السيارة، الصحة، العائلة — كل الالتزامات اللي بتتنسى بسهولة، بمكان واحد يذكّرك بالوقت الصح.</p>
+    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="showAuth('signup')">إنشاء حساب ←</button>
+      <button class="btn btn-ghost" onclick="showAuth('login')">تسجيل الدخول</button>
+    </div>
+
+    <div class="orbit-wrap">
+      <div class="orbit-ring orbit-r1"></div>
+      <div class="orbit-ring orbit-r2"></div>
+      <div class="orbit-ring orbit-r3"></div>
+      <div class="orbit-core">أنت</div>
+      <div class="orbit-node orbit-n1"><span class="dot" style="background:var(--amber)"></span> الوثائق</div>
+      <div class="orbit-node orbit-n2"><span class="dot" style="background:var(--mint)"></span> الاشتراكات</div>
+      <div class="orbit-node orbit-n3"><span class="dot" style="background:var(--rose)"></span> العائلة</div>
+      <div class="orbit-node orbit-n4"><span class="dot" style="background:var(--amber)"></span> السيارة</div>
+      <div class="orbit-node orbit-n5"><span class="dot" style="background:var(--mint)"></span> الصحة</div>
+      <div class="orbit-node orbit-n6"><span class="dot" style="background:var(--rose)"></span> العمل</div>
+    </div>
+  </div>
+
+  <div class="landing-feats">
+    <div class="feat-card">
+      <span class="ic">🧭</span>
+      <h4>تخصيص فوري</h4>
+      <p>اختر وضعك (طالب، موظف، صاحب سيارة...) وخذ قائمة تذكيرات جاهزة خلال ثانية.</p>
+    </div>
+    <div class="feat-card">
+      <span class="ic">💡</span>
+      <h4>نصايح استباقية</h4>
+      <p>فلك بيرصد اشتراكاتك غير المستخدمة وبيديك ملخص وملاحظات ذكية أول بأول.</p>
+    </div>
+    <div class="feat-card">
+      <span class="ic">👨‍👩‍👧</span>
+      <h4>مشاركة عائلية</h4>
+      <p>تابع التزامات البيت مع عائلتك من مكان واحد.</p>
+    </div>
+  </div>
+
+  <div class="sub-wrap" style="text-align:center; padding-top:10px;">
+    <h2 style="font-size:26px; margin-bottom:6px;">خطط الاشتراك</h2>
+    <p class="sub" style="max-width:480px; margin:0 auto 28px;">اختر الخطة المناسبة لك — تقدر تبدأ مجانًا وتترقى وقتما تحب.</p>
+    <div class="plan-grid" id="landing-plan-grid" style="text-align:right;"></div>
+  </div>
+</div>
+
+
+<!-- ===================== SCREEN 1.5: AUTH (Login/Signup) ===================== -->
+<div class="screen" id="screen-auth">
+  <div class="topbar">
+    <div class="brand">فلك</div>
+    <button class="btn btn-ghost" onclick="goTo('landing')">← الرئيسية</button>
+  </div>
+  <div class="auth-wrap">
+    <div class="auth-tabs">
+      <button class="auth-tab" id="tab-login" onclick="switchAuthTab('login')">تسجيل الدخول</button>
+      <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">إنشاء حساب</button>
+    </div>
+    <h2 class="auth-title" id="auth-title">أهلًا فيك من جديد</h2>
+    <p class="auth-sub" id="auth-sub">سجّل دخولك عشان تكمل من وين وقفت</p>
+
+    <div class="auth-error" id="auth-error"></div>
+
+    <form id="auth-form" onsubmit="handleAuthSubmit(event)">
+      <!-- LOGIN FIELDS -->
+      <div id="login-fields">
+        <div class="field">
+          <label>البريد الإلكتروني</label>
+          <input type="email" id="login-email" placeholder="example@email.com">
+        </div>
+        <div class="field">
+          <label>كلمة المرور</label>
+          <input type="password" id="login-password" placeholder="كلمة المرور">
+        </div>
+      </div>
+
+      <!-- SIGNUP FIELDS -->
+      <div id="signup-fields" style="display:none;">
+        <div class="field">
+          <label>اسم المستخدم <span style="color:var(--fog-dim); font-weight:400;">(بالإنجليزي فقط)</span></label>
+          <input type="text" id="signup-username" placeholder="mohamed_essam" pattern="[A-Za-z0-9_]+">
+        </div>
+
+        <div class="field">
+          <label>كلمة المرور</label>
+          <div class="pw-strength-meter"><div class="pw-strength-bar" id="pw-strength-bar"></div></div>
+          <div class="pw-strength-label" id="pw-strength-label">اكتب كلمة مرور قوية</div>
+          <input type="password" id="signup-password" oninput="checkPasswordStrength()" placeholder="8 أحرف على الأقل، حرف كبير وصغير ورقم">
+        </div>
+
+        <div class="field">
+          <label>تأكيد كلمة المرور</label>
+          <input type="password" id="signup-password-confirm" placeholder="أعد كتابة كلمة المرور">
+        </div>
+
+        <div class="field">
+          <label>رقم الهاتف <span style="color:var(--fog-dim); font-weight:400;">(اختياري — لتلقي إشعارات واتساب)</span></label>
+          <div style="display:flex; gap:8px;">
+            <select id="signup-country-code" style="max-width:120px; flex-shrink:0;">
+              <option value="+20">🇪🇬 +20</option>
+              <option value="+966">🇸🇦 +966</option>
+              <option value="+971">🇦🇪 +971</option>
+              <option value="+962">🇯🇴 +962</option>
+              <option value="+961">🇱🇧 +961</option>
+              <option value="+963">🇸🇾 +963</option>
+              <option value="+964">🇮🇶 +964</option>
+              <option value="+965">🇰🇼 +965</option>
+              <option value="+973">🇧🇭 +973</option>
+              <option value="+974">🇶🇦 +974</option>
+              <option value="+968">🇴🇲 +968</option>
+              <option value="+970">🇵🇸 +970</option>
+              <option value="+212">🇲🇦 +212</option>
+              <option value="+216">🇹🇳 +216</option>
+              <option value="+213">🇩🇿 +213</option>
+              <option value="+218">🇱🇾 +218</option>
+              <option value="+249">🇸🇩 +249</option>
+              <option value="+1">🇺🇸 +1</option>
+              <option value="+44">🇬🇧 +44</option>
+            </select>
+            <input type="tel" id="signup-phone" placeholder="1xxxxxxxxx" style="flex:1;">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>البريد الإلكتروني <span style="color:var(--fog-dim); font-weight:400;">(لتلقي الإشعارات وتسجيل الدخول)</span></label>
+          <input type="email" id="signup-email" placeholder="example@email.com">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="auth-submit-btn" style="width:100%; justify-content:center;">متابعة ←</button>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 2: ONBOARDING ===================== -->
+<div class="screen" id="screen-onboarding">
+  <div class="topbar">
+    <div class="brand">فلك</div>
+  </div>
+  <div class="onboard-wrap">
+    <h2>وش وضعك الحالي؟</h2>
+    <p class="sub">اختر واحد أو أكثر — راح نجهزلك قائمة تذكيرات مناسبة مباشرة. تقدر تعدّلها لاحقًا وقتما تحب.</p>
+
+    <div class="role-grid" id="role-grid"></div>
+
+    <button class="btn btn-primary" onclick="finishOnboarding()">تابع إلى لوحتي ←</button>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 3: DASHBOARD ===================== -->
+<div class="screen" id="screen-dashboard">
+  <div class="topbar">
+    <div class="brand">فلك</div>
+    <div class="top-actions">
+      <span class="user-chip" id="user-chip">👤 —</span>
+      <span class="plan-badge" id="dash-plan-badge"><span class="dot"></span> مجاني</span>
+      <button class="btn btn-ghost" onclick="showSubscription()">💳 الاشتراك</button>
+      <button class="btn btn-ghost" onclick="showFamily()">👨‍👩‍👧 المساحة العائلية</button>
+      <button class="btn btn-ghost" onclick="goTo('onboarding')">تعديل وضعي</button>
+      <button class="btn btn-ghost" onclick="handleLogout()">خروج</button>
+    </div>
+  </div>
+  <div class="dash-wrap">
+    <div class="dash-head">
+      <div>
+        <h2>لوحتك</h2>
+        <p class="sub" id="dash-sub">هذا اللي جاي عليك قريب</p>
+      </div>
+      <div class="plan-badge" id="dash-quota-badge"><span class="dot"></span> 0 / 5 تذكير هذا الشهر</div>
+    </div>
+    <div id="dash-content"></div>
+  </div>
+  <button class="fab" onclick="openModal()">+ إضافة تذكير</button>
+</div>
+
+<!-- ===================== SCREEN 4: FAMILY SPACE ===================== -->
+<div class="screen" id="screen-family">
+  <div class="topbar">
+    <div class="brand">فلك</div>
+    <div class="top-actions">
+      <button class="btn btn-ghost" onclick="goTo('dashboard')">← رجوع للوحتي</button>
+    </div>
+  </div>
+  <div class="family-wrap">
+    <div class="family-head">
+      <div>
+        <h2>المساحة العائلية</h2>
+        <p class="sub">شارك التزامات البيت مع عائلتك، وتابعوها مع بعض من مكان واحد.</p>
+      </div>
+    </div>
+
+    <div class="member-grid" id="member-grid"></div>
+
+    <div class="invite-box">
+      <span class="link" id="invite-link">falak.app/invite/a7f3k9</span>
+      <button class="btn btn-ghost" onclick="copyInviteLink()">نسخ الرابط</button>
+    </div>
+
+    <div class="group-label">التذكيرات المشتركة</div>
+    <div class="shared-list" id="shared-list"></div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 5: SUBSCRIPTION ===================== -->
+<div class="screen" id="screen-subscription">
+  <div class="topbar">
+    <div class="brand">فلك</div>
+    <div class="top-actions">
+      <button class="btn btn-ghost" onclick="goTo('dashboard')">← رجوع للوحتي</button>
+    </div>
+  </div>
+  <div class="sub-wrap">
+    <div class="sub-head">
+      <h2>الاشتراك والخطط</h2>
+      <p class="sub">اختر الخطة المناسبة لك. تقدر تترقى أو تلغي وقتما تحب.</p>
+      <span class="plan-badge" id="sub-current-badge"><span class="dot"></span> خطتك الحالية: مجاني</span>
+    </div>
+
+    <div class="plan-grid" id="plan-grid"></div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: ADD FAMILY MEMBER ===================== -->
+<div class="overlay" id="member-modal-overlay">
+  <div class="modal">
+    <h3>دعوة فرد من العائلة</h3>
+    <div class="field">
+      <label>الاسم</label>
+      <input type="text" id="fm-name" placeholder="مثلاً: سارة">
+    </div>
+    <div class="field">
+      <label>صلة القرابة</label>
+      <select id="fm-relation">
+        <option value="زوج/زوجة">زوج / زوجة</option>
+        <option value="ابن/ابنة">ابن / ابنة</option>
+        <option value="أب/أم">أب / أم</option>
+        <option value="أخ/أخت">أخ / أخت</option>
+        <option value="أخرى">أخرى</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeMemberModal()">إلغاء</button>
+      <button class="btn btn-primary" onclick="addFamilyMember()">إرسال الدعوة</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PAGE NAV (forward/back) ===================== -->
+<div class="page-nav" id="page-nav">
+  <button id="nav-back" onclick="goPrev()">→ رجوع</button>
+  <span class="step-dots" id="nav-dots"></span>
+  <button id="nav-next" onclick="goNext()">التالي ←</button>
+</div>
+
+<!-- ===================== MODAL: ADD REMINDER ===================== -->
+<div class="overlay" id="modal-overlay">
+  <div class="modal">
+    <h3>إضافة تذكير جديد</h3>
+    <div class="field">
+      <label>العنوان</label>
+      <input type="text" id="f-title" placeholder="مثلاً: تجديد تأمين السيارة">
+    </div>
+    <div class="field">
+      <label>التاريخ</label>
+      <input type="date" id="f-date">
+    </div>
+    <div class="field">
+      <label>التكرار</label>
+      <select id="f-recur">
+        <option value="once">مرة واحدة</option>
+        <option value="monthly">شهري</option>
+        <option value="yearly">سنوي</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>التصنيف</label>
+      <select id="f-cat" onchange="toggleCostField()">
+        <option value="car">سيارة</option>
+        <option value="health">صحة</option>
+        <option value="docs">وثائق</option>
+        <option value="subs">اشتراكات</option>
+        <option value="family">عائلة</option>
+        <option value="work">عمل</option>
+        <option value="other">أخرى</option>
+      </select>
+    </div>
+    <div class="field" id="f-cost-wrap" style="display:none;">
+      <label>التكلفة الشهرية (اختياري)</label>
+      <input type="number" id="f-cost" placeholder="مثلاً: 15">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+      <button class="btn btn-primary" onclick="addReminder()">حفظ التذكير</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+/* ===================== FIREBASE AUTH + FIRESTORE ===================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyA5ZH5u-AizPlUZzhSYMIqBhHpuFMYiEwM",
+  authDomain: "falak-app-4eb99.firebaseapp.com",
+  projectId: "falak-app-4eb99",
+  storageBucket: "falak-app-4eb99.firebasestorage.app",
+  messagingSenderId: "92699343099",
+  appId: "1:92699343099:web:3983f74063a6e2afeb985e"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+let authMode = 'login';
+let currentUser = null;
+let signupExtra = { phone: null, email: null };
+let isLoadingUserData = false;
+/* ===================== DATA ===================== */
+const ROLES = [
+  { id:'student', ic:'🎓', name:'طالب', desc:'رسوم، تسجيل مواد', templates:[
+    {title:'دفع رسوم الفصل الدراسي', days:20, cat:'work'},
+    {title:'تجديد البطاقة الجامعية', days:90, cat:'docs'},
+  ]},
+  { id:'employee', ic:'💼', name:'موظف', desc:'تأمين، إجازات', templates:[
+    {title:'تجديد التأمين الصحي', days:45, cat:'health'},
+    {title:'مراجعة تقييم الأداء السنوي', days:120, cat:'work'},
+  ]},
+  { id:'driver', ic:'🚗', name:'صاحب سيارة', desc:'فحص، رخصة، تأمين', templates:[
+    {title:'الفحص الدوري للسيارة', days:15, cat:'car'},
+    {title:'تجديد رخصة القيادة', days:60, cat:'docs'},
+    {title:'تجديد تأمين السيارة', days:30, cat:'car'},
+  ]},
+  { id:'parent', ic:'👨‍👩‍👧', name:'أب / أم', desc:'تطعيمات، مدرسة', templates:[
+    {title:'موعد تطعيم الطفل', days:10, cat:'family'},
+    {title:'تجديد جواز سفر الطفل', days:100, cat:'docs'},
+  ]},
+  { id:'owner', ic:'🏪', name:'صاحب عمل صغير', desc:'رخصة، ضرائب', templates:[
+    {title:'تجديد السجل التجاري', days:40, cat:'work'},
+    {title:'تقديم الإقرار الضريبي', days:70, cat:'work'},
+  ]},
+];
+
+const CAT_LABELS = { car:'سيارة', health:'صحة', docs:'وثائق', subs:'اشتراكات', family:'عائلة', work:'عمل', other:'أخرى' };
+
+let selectedRoles = new Set();
+let reminders = [];
+let familyMembers = [];
+let currentPlan = 'free';
+
+const PLANS = [
+  { id:'free', name:'مجاني', price:'0', unit:'$ / شهريًا', quota:5, features:[
+    'حتى 5 تذكيرات شهريًا', 'تنبيه داخل الموقع فقط', 'قوالب أدوار الحياة الأساسية'
+  ]},
+  { id:'individual', name:'فردي', price:'5', unit:'$ / شهريًا', quota:50, features:[
+    'حتى 50 تذكير شهريًا', 'رؤى ونصائح استباقية شهرية', 'تنبيهات عبر الإيميل', 'دعم أساسي'
+  ]},
+  { id:'individual_plus', name:'فردي بلس', price:'10', unit:'$ / شهريًا', quota:100, featured:true, features:[
+    'حتى 100 تذكير شهريًا', 'كل مزايا خطة فردي', 'تنبيهات واتساب', 'تصنيفات مخصصة', 'دعم أولوية'
+  ]},
+  { id:'family', name:'عائلي', price:'25', unit:'$ / شهريًا', quota:150, features:[
+    'حتى 150 تذكير شهريًا', 'كل مزايا خطة فردي بلس', 'حتى 5 أفراد مشتركين', 'مساحة تذكيرات عائلية مشتركة', 'تقرير مصاريف موحّد للعائلة'
+  ]},
+];
+
+/* ===================== NAVIGATION ===================== */
+const SCREEN_ORDER = ['landing', 'onboarding', 'dashboard'];
+let currentScreenIndex = 0;
+
+function goTo(screen){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + screen).classList.add('active');
+  if(SCREEN_ORDER.includes(screen)){
+    currentScreenIndex = SCREEN_ORDER.indexOf(screen);
+    updateNavUI();
+  }
+  if(screen === 'onboarding'){
+    renderRoleGrid();
+  }
+  document.getElementById('page-nav').style.display = SCREEN_ORDER.includes(screen) ? 'flex' : 'none';
+  window.scrollTo(0,0);
+}
+
+function showFamily(){
+  goTo('family');
+  renderFamily();
+}
+
+function showSubscription(){
+  goTo('subscription');
+  renderSubscription();
+}
+
+/* ===================== AUTH (Login/Signup) ===================== */
+function showAuth(mode){
+  goTo('auth');
+  switchAuthTab(mode);
+}
+
+function switchAuthTab(mode){
+  authMode = mode;
+  document.getElementById('tab-login').classList.toggle('active', mode === 'login');
+  document.getElementById('tab-signup').classList.toggle('active', mode === 'signup');
+  document.getElementById('auth-title').textContent = mode === 'login' ? 'أهلًا فيك من جديد' : 'يلا نبدأ';
+  document.getElementById('auth-sub').textContent = mode === 'login' ? 'سجّل دخولك عشان تكمل من وين وقفت' : 'أنشئ حسابك المجاني خلال ثواني';
+  document.getElementById('auth-submit-btn').textContent = mode === 'login' ? 'تسجيل الدخول ←' : 'إنشاء الحساب ←';
+  document.getElementById('login-fields').style.display = (mode === 'login') ? 'block' : 'none';
+  document.getElementById('signup-fields').style.display = (mode === 'signup') ? 'block' : 'none';
+  hideAuthError();
+}
+
+function checkPasswordStrength(){
+  const pwd = document.getElementById('signup-password').value;
+  const bar = document.getElementById('pw-strength-bar');
+  const label = document.getElementById('pw-strength-label');
+
+  if(pwd.length === 0){
+    bar.style.width = '0%';
+    bar.style.background = 'var(--line)';
+    label.textContent = 'اكتب كلمة مرور قوية';
+    label.style.color = 'var(--fog-dim)';
+    return 0;
+  }
+
+  let score = 0;
+  if(pwd.length >= 8) score++;
+  if(/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) score++;
+  if(/[0-9]/.test(pwd)) score++;
+  if(/[^A-Za-z0-9]/.test(pwd)) score++;
+
+  const levels = [
+    { width:'15%', color:'var(--rose)', text:'ضعيفة جدًا' },
+    { width:'35%', color:'var(--rose)', text:'ضعيفة' },
+    { width:'60%', color:'var(--amber)', text:'متوسطة' },
+    { width:'85%', color:'var(--mint)', text:'قوية' },
+    { width:'100%', color:'var(--mint)', text:'قوية جدًا' },
+  ];
+  const level = levels[score];
+  bar.style.width = level.width;
+  bar.style.background = level.color;
+  label.textContent = level.text;
+  label.style.color = level.color;
+  return score;
+}
+
+function showAuthError(msg){
+  const el = document.getElementById('auth-error');
+  el.textContent = msg;
+  el.classList.add('active');
+}
+function hideAuthError(){
+  document.getElementById('auth-error').classList.remove('active');
+}
+
+function mapFirebaseError(code){
+  const map = {
+    'auth/email-already-in-use': 'هذا البريد الإلكتروني مسجّل مسبقًا. جرّب تسجيل الدخول بدل إنشاء حساب.',
+    'auth/invalid-email': 'صيغة البريد الإلكتروني غير صحيحة.',
+    'auth/weak-password': 'كلمة المرور لازم تكون 6 أحرف على الأقل.',
+    'auth/user-not-found': 'ما في حساب مسجّل بهذا البريد الإلكتروني.',
+    'auth/wrong-password': 'كلمة المرور غير صحيحة.',
+    'auth/invalid-credential': 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
+    'auth/too-many-requests': 'محاولات كثيرة جدًا، جرّب بعد شوي.',
+  };
+  return map[code] || 'صار خطأ غير متوقع، حاول مرة ثانية.';
+}
+
+function handleAuthSubmit(e){
+  e.preventDefault();
+  hideAuthError();
+  const btn = document.getElementById('auth-submit-btn');
+
+  if(authMode === 'login'){
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    if(!email || !password){
+      showAuthError('لازم تعبي البريد الإلكتروني وكلمة المرور.');
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'جاري التحقق...';
+    auth.signInWithEmailAndPassword(email, password).catch(err => {
+      showAuthError(mapFirebaseError(err.code));
+      btn.disabled = false;
+      btn.textContent = 'تسجيل الدخول ←';
+    });
+    return;
+  }
+
+  // ---- SIGNUP ----
+  const username = document.getElementById('signup-username').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const confirmPassword = document.getElementById('signup-password-confirm').value;
+  const countryCode = document.getElementById('signup-country-code').value;
+  const phone = document.getElementById('signup-phone').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+
+  if(!username || !/^[A-Za-z0-9_]+$/.test(username)){
+    showAuthError('اسم المستخدم لازم يكون بالإنجليزي فقط (حروف، أرقام، أو _).');
+    return;
+  }
+  if(!email){
+    showAuthError('البريد الإلكتروني مطلوب.');
+    return;
+  }
+  const strength = checkPasswordStrength();
+  if(strength < 3){
+    showAuthError('كلمة المرور لازم تكون قوية على الأقل (8 أحرف، حرف كبير وصغير، ورقم).');
+    return;
+  }
+  if(password !== confirmPassword){
+    showAuthError('كلمة المرور وتأكيدها مش متطابقين.');
+    return;
+  }
+  if(phone && !/^[0-9]{6,}$/.test(phone)){
+    showAuthError('رقم الهاتف غير صحيح.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'جاري إنشاء الحساب...';
+
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(cred => cred.user.updateProfile({ displayName: username }))
+    .then(() => {
+      signupExtra.phone = phone ? (countryCode + phone) : null;
+      signupExtra.email = email;
+    })
+    .catch(err => {
+      showAuthError(mapFirebaseError(err.code));
+      btn.disabled = false;
+      btn.textContent = 'إنشاء الحساب ←';
+    });
+}
+
+function handleLogout(){
+  auth.signOut().then(() => {
+    reminders = [];
+    familyMembers = [];
+    selectedRoles = new Set();
+    currentPlan = 'free';
+    goTo('landing');
+  });
+}
+
+auth.onAuthStateChanged(user => {
+  currentUser = user;
+  const chip = document.getElementById('user-chip');
+  if(user){
+    if(chip) chip.textContent = '👤 ' + (user.displayName || user.email);
+    const activeScreen = document.querySelector('.screen.active');
+    const activeId = activeScreen ? activeScreen.id : '';
+    if(activeId === 'screen-landing' || activeId === 'screen-auth'){
+      loadUserData(user.uid);
+    }
+  } else {
+    if(chip) chip.textContent = '👤 —';
+  }
+});
+
+function loadUserData(uid){
+  isLoadingUserData = true;
+  db.collection('users').doc(uid).get().then(snap => {
+    if(snap.exists){
+      const data = snap.data();
+      reminders = data.reminders || [];
+      familyMembers = data.familyMembers || [];
+      selectedRoles = new Set(data.selectedRoles || []);
+      currentPlan = data.currentPlan || 'free';
+      isLoadingUserData = false;
+      goTo('dashboard');
+      renderDashboard();
+      updatePlanBadges();
+    } else {
+      isLoadingUserData = false;
+      goTo('onboarding');
+    }
+  }).catch(err => {
+    console.error('تعذّر تحميل بيانات المستخدم:', err);
+    isLoadingUserData = false;
+    goTo('onboarding');
+  });
+}
+
+function saveUserData(){
+  if(!currentUser || isLoadingUserData) return;
+  const payload = {
+    reminders: reminders,
+    familyMembers: familyMembers,
+    selectedRoles: Array.from(selectedRoles),
+    currentPlan: currentPlan,
+    signupExtra: signupExtra,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  db.collection('users').doc(currentUser.uid).set(payload, { merge: true }).catch(err => {
+    console.error('تعذّر حفظ البيانات:', err);
+  });
+}
+
+const PLAN_LABELS = { free:'مجاني', individual:'فردي', individual_plus:'فردي بلس', family:'عائلي' };
+
+function getCurrentPlan(){
+  return PLANS.find(p => p.id === currentPlan) || PLANS[0];
+}
+
+function updatePlanBadges(){
+  const label = PLAN_LABELS[currentPlan];
+  const dashBadge = document.getElementById('dash-plan-badge');
+  const subBadge = document.getElementById('sub-current-badge');
+  if(dashBadge) dashBadge.innerHTML = `<span class="dot"></span> ${label}`;
+  if(subBadge) subBadge.innerHTML = `<span class="dot"></span> خطتك الحالية: ${label}`;
+  updateQuotaBadge();
+}
+
+function updateQuotaBadge(){
+  const quotaBadge = document.getElementById('dash-quota-badge');
+  if(!quotaBadge) return;
+  const quota = getCurrentPlan().quota;
+  const used = reminders.length;
+  quotaBadge.innerHTML = `<span class="dot" style="background:${used >= quota ? 'var(--rose)' : 'var(--mint)'}"></span> ${used} / ${quota} تذكير هذا الشهر`;
+}
+
+function renderSubscription(){
+  const grid = document.getElementById('plan-grid');
+  grid.innerHTML = PLANS.map(p => {
+    const isCurrent = p.id === currentPlan;
+    const cardClass = isCurrent ? 'current' : (p.featured ? 'featured' : '');
+    let btnHtml;
+    if(isCurrent){
+      btnHtml = `<button class="btn btn-ghost" disabled>خطتك الحالية</button>`;
+    } else {
+      btnHtml = `<button class="btn ${p.featured ? 'btn-primary' : 'btn-mint'}" onclick="selectPlan('${p.id}')">الترقية إلى ${p.name}</button>`;
+    }
+    return `
+      <div class="plan-card ${cardClass}">
+        ${isCurrent ? '<span class="plan-current-tag">خطتك الآن</span>' : ''}
+        <div class="plan-name">${p.name}</div>
+        <div class="plan-price">${p.price}<span class="unit"> ${p.unit}</span></div>
+        <ul>${p.features.map(f => `<li>${f}</li>`).join('')}</ul>
+        ${btnHtml}
+      </div>
+    `;
+  }).join('');
+  updatePlanBadges();
+}
+
+function renderLandingPlans(){
+  const grid = document.getElementById('landing-plan-grid');
+  if(!grid) return;
+  grid.innerHTML = PLANS.map(p => `
+    <div class="plan-card ${p.featured ? 'featured' : ''}">
+      <div class="plan-name">${p.name}</div>
+      <div class="plan-price">${p.price}<span class="unit"> ${p.unit}</span></div>
+      <ul>${p.features.map(f => `<li>${f}</li>`).join('')}</ul>
+      <button class="btn ${p.featured ? 'btn-primary' : 'btn-mint'}" onclick="showAuth('signup')">ابدأ الآن</button>
+    </div>
+  `).join('');
+}
+
+function selectPlan(planId){
+  currentPlan = planId;
+  renderSubscription();
+  saveUserData();
+  alert(`تمت الترقية إلى خطة "${PLAN_LABELS[planId]}" (تجريبي — بدون أي دفع فعلي حاليًا).`);
+}
+
+function goNext(){
+  const current = SCREEN_ORDER[currentScreenIndex];
+  if(current === 'onboarding'){
+    finishOnboarding(); // validates role selection, then navigates to dashboard
+    return;
+  }
+  if(currentScreenIndex < SCREEN_ORDER.length - 1){
+    goTo(SCREEN_ORDER[currentScreenIndex + 1]);
+  }
+}
+
+function goPrev(){
+  if(currentScreenIndex > 0){
+    goTo(SCREEN_ORDER[currentScreenIndex - 1]);
+  }
+}
+
+function updateNavUI(){
+  const backBtn = document.getElementById('nav-back');
+  const nextBtn = document.getElementById('nav-next');
+  const dotsWrap = document.getElementById('nav-dots');
+
+  backBtn.disabled = (currentScreenIndex === 0);
+  nextBtn.disabled = (currentScreenIndex === SCREEN_ORDER.length - 1);
+  nextBtn.textContent = (SCREEN_ORDER[currentScreenIndex] === 'onboarding') ? 'تابع ←' : 'التالي ←';
+
+  dotsWrap.innerHTML = SCREEN_ORDER.map((s, i) =>
+    `<span class="step-dot ${i === currentScreenIndex ? 'active' : ''}"></span>`
+  ).join('');
+}
+
+/* ===================== ONBOARDING ===================== */
+function renderRoleGrid(){
+  const grid = document.getElementById('role-grid');
+  grid.innerHTML = '';
+  ROLES.forEach(role => {
+    const card = document.createElement('div');
+    card.className = 'role-card' + (selectedRoles.has(role.id) ? ' selected' : '');
+    card.innerHTML = `
+      <span class="ic">${role.ic}</span>
+      <div>
+        <div class="name">${role.name}</div>
+        <div class="desc">${role.desc}</div>
+      </div>
+      <div class="role-check">✓</div>
+    `;
+    card.onclick = () => {
+      if(selectedRoles.has(role.id)) selectedRoles.delete(role.id);
+      else selectedRoles.add(role.id);
+      renderRoleGrid();
+    };
+    grid.appendChild(card);
+  });
+}
+
+function finishOnboarding(){
+  if(selectedRoles.size === 0){
+    alert('اختر وضع واحد على الأقل عشان نجهزلك تذكيرات مناسبة.');
+    return;
+  }
+  reminders = [];
+  const today = new Date();
+  ROLES.forEach(role => {
+    if(selectedRoles.has(role.id)){
+      role.templates.forEach(t => {
+        const d = new Date(today);
+        d.setDate(d.getDate() + t.days);
+        reminders.push({
+          id: Math.random().toString(36).slice(2),
+          title: t.title,
+          date: d.toISOString().slice(0,10),
+          cat: t.cat,
+          recur: 'yearly',
+          used: true,
+          cost: null,
+          shared: false
+        });
+      });
+    }
+  });
+  const quota = getCurrentPlan().quota;
+  if(reminders.length > quota){
+    reminders = reminders.slice(0, quota);
+    alert(`جهزنالك ${quota} تذكير حسب حد خطتك الحالية "${PLAN_LABELS[currentPlan]}". ترقّى لخطة أعلى لو بدك تذكيرات أكتر.`);
+  }
+  goTo('dashboard');
+  renderDashboard();
+  saveUserData();
+}
+function daysUntil(dateStr){
+  const d = new Date(dateStr);
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  return Math.round((d - today) / (1000*60*60*24));
+}
+
+function urgencyClass(days){
+  if(days <= 14) return 'urgent';
+  if(days <= 45) return 'soon';
+  return 'later';
+}
+
+function renderDashboard(){
+  const content = document.getElementById('dash-content');
+  const sub = document.getElementById('dash-sub');
+  updateQuotaBadge();
+
+  if(reminders.length === 0){
+    content.innerHTML = `<div class="empty">ما عندك أي تذكيرات بعد. اضغط "+ إضافة تذكير" تبدأ.</div>`;
+    sub.textContent = 'لوحتك فاضية حاليًا';
+    return;
+  }
+
+  const sorted = [...reminders].sort((a,b) => daysUntil(a.date) - daysUntil(b.date));
+  const urgent = sorted.filter(r => daysUntil(r.date) <= 14);
+  const soon = sorted.filter(r => { const d = daysUntil(r.date); return d > 14 && d <= 45; });
+  const later = sorted.filter(r => daysUntil(r.date) > 45);
+
+  sub.textContent = `${reminders.length} تذكير نشط — ${urgent.length} منها عاجل`;
+
+  /* ---- Layer 2: Insights ---- */
+  const subsItems = reminders.filter(r => r.cat === 'subs');
+  const unusedSubs = subsItems.filter(r => r.used === false);
+  const monthlyTotal = subsItems.reduce((sum, r) => sum + (Number(r.cost) || 0), 0);
+
+  const catCounts = {};
+  reminders.forEach(r => { catCounts[r.cat] = (catCounts[r.cat] || 0) + 1; });
+  let topCat = null, topCount = 0;
+  Object.entries(catCounts).forEach(([cat, count]) => { if(count > topCount){ topCat = cat; topCount = count; } });
+
+  const insightsHtml = `
+    <div class="insights">
+      <div class="insight-card">
+        <div class="insight-label">إجمالي الاشتراكات الشهرية</div>
+        <div class="insight-value">${monthlyTotal > 0 ? monthlyTotal : '—'}${monthlyTotal > 0 ? ' <span class="unit">شهريًا</span>' : ''}</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-label">أكثر تصنيف نشاط</div>
+        <div class="insight-value" style="font-size:18px;">${topCat ? (CAT_LABELS[topCat] + ' <span class="unit">(' + topCount + ')</span>') : '—'}</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-label">اشتراكات غير مستخدمة</div>
+        <div class="insight-value" style="color:${unusedSubs.length > 0 ? 'var(--rose)' : 'var(--fog)'}">${unusedSubs.length}</div>
+      </div>
+    </div>
+  `;
+
+  /* ---- Layer 2: Proactive advice ---- */
+  let advice = '';
+  if(unusedSubs.length > 0){
+    const names = unusedSubs.map(r => r.title).join('، ');
+    advice = `لاحظنا إنك حددت <b>${unusedSubs.length}</b> اشتراك ما زلت تستخدمه (${names}). ممكن توفر عليك لو ألغيتها.`;
+  } else if(urgent.length >= 3){
+    advice = `عندك <b>${urgent.length}</b> التزامات عاجلة خلال أسبوعين — يفضل تبدأ بأقربها اليوم.`;
+  } else if(subsItems.length === 0){
+    advice = `ما أضفت أي اشتراكات بعد — لو عندك اشتراكات (نتفليكس، صالة رياضية...) أضفها عشان فلك يساعدك تتابعها.`;
+  } else {
+    advice = `كل شي تحت السيطرة حاليًا، وما في اشتراكات محتاجة مراجعة.`;
+  }
+
+  const adviceHtml = `
+    <div class="advice-banner">
+      <span class="ic">💡</span>
+      <div class="txt">${advice}</div>
+    </div>
+  `;
+
+  function renderGroup(label, list){
+    if(list.length === 0) return '';
+    let html = `<div class="group-label">${label}</div><div class="reminder-list">`;
+    list.forEach(r => {
+      const days = daysUntil(r.date);
+      const cls = urgencyClass(days);
+      const daysLabel = days < 0 ? `متأخر ${Math.abs(days)} يوم` : days === 0 ? 'اليوم' : `خلال ${days} يوم`;
+      const isSub = r.cat === 'subs';
+      const isUnused = isSub && r.used === false;
+      html += `
+        <div class="reminder-card ${isUnused ? 'unused-sub' : ''}">
+          <span class="urgency-dot ${cls}"></span>
+          <div class="r-info">
+            <div class="r-title">${r.title}${r.cost ? ` <span style="color:var(--fog-dim); font-weight:400;">· ${r.cost}/شهريًا</span>` : ''}</div>
+            <div class="r-meta">${new Date(r.date).toLocaleDateString('ar-EG', {day:'numeric', month:'long', year:'numeric'})}</div>
+            ${isUnused ? `<div class="r-suggest">فكّر تلغيه — مش مستخدم حاليًا</div>` : ''}
+          </div>
+          <span class="r-cat">${CAT_LABELS[r.cat] || r.cat}</span>
+          <button class="r-share-btn ${r.shared ? 'shared' : ''}" onclick="toggleShared('${r.id}')">${r.shared ? '✓ مشترك' : 'مشاركة'}</button>
+          ${isSub ? `<button class="r-use-toggle ${isUnused ? 'unused' : ''}" onclick="toggleSubUsed('${r.id}')">${isUnused ? 'مش مستخدم' : 'مستخدم؟'}</button>` : ''}
+          <span class="r-days mono">${daysLabel}</span>
+          <button class="r-del" onclick="deleteReminder('${r.id}')">✕</button>
+        </div>`;
+    });
+    html += `</div>`;
+    return html;
+  }
+
+  content.innerHTML =
+    insightsHtml +
+    adviceHtml +
+    renderGroup('عاجل — خلال أسبوعين', urgent) +
+    renderGroup('قريبًا — خلال شهر ونصف', soon) +
+    renderGroup('لاحقًا', later);
+}
+
+function toggleSubUsed(id){
+  const r = reminders.find(r => r.id === id);
+  if(!r) return;
+  r.used = (r.used === false) ? true : false;
+  renderDashboard();
+  saveUserData();
+}
+
+function toggleShared(id){
+  const r = reminders.find(r => r.id === id);
+  if(!r) return;
+  r.shared = !r.shared;
+  renderDashboard();
+  saveUserData();
+}
+
+/* ===================== FAMILY SPACE (Layer 4) ===================== */
+function renderFamily(){
+  const grid = document.getElementById('member-grid');
+  grid.innerHTML = '';
+
+  familyMembers.forEach(m => {
+    const card = document.createElement('div');
+    card.className = 'member-card';
+    card.innerHTML = `
+      <div class="member-avatar">${m.name.charAt(0)}</div>
+      <div class="member-name">${m.name}</div>
+      <div class="member-role">${m.relation}</div>
+    `;
+    grid.appendChild(card);
+  });
+
+  const addCard = document.createElement('div');
+  addCard.className = 'member-card add-member';
+  addCard.innerHTML = `<span class="plus">+</span> إضافة فرد`;
+  addCard.onclick = openMemberModal;
+  grid.appendChild(addCard);
+
+  const sharedWrap = document.getElementById('shared-list');
+  const sharedReminders = reminders.filter(r => r.shared);
+
+  if(sharedReminders.length === 0){
+    sharedWrap.innerHTML = `<div class="empty">ما في تذكيرات مشتركة بعد. ارجع للوحتك واضغط "مشاركة" على أي تذكير تحب عائلتك تشوفه.</div>`;
+    return;
+  }
+
+  sharedWrap.innerHTML = sharedReminders.map(r => `
+    <div class="shared-card">
+      <span class="urgency-dot ${urgencyClass(daysUntil(r.date))}"></span>
+      <div class="r-info">
+        <div class="r-title">${r.title}</div>
+        <div class="r-meta">${new Date(r.date).toLocaleDateString('ar-EG', {day:'numeric', month:'long', year:'numeric'})} · ${CAT_LABELS[r.cat] || r.cat}</div>
+      </div>
+      <button class="r-share-btn shared" onclick="toggleShared('${r.id}')">✓ مشترك</button>
+    </div>
+  `).join('');
+}
+
+function openMemberModal(){
+  document.getElementById('fm-name').value = '';
+  document.getElementById('fm-relation').value = 'زوج/زوجة';
+  document.getElementById('member-modal-overlay').classList.add('active');
+}
+function closeMemberModal(){
+  document.getElementById('member-modal-overlay').classList.remove('active');
+}
+function addFamilyMember(){
+  const name = document.getElementById('fm-name').value.trim();
+  const relation = document.getElementById('fm-relation').value;
+  if(!name){
+    alert('لازم تكتب اسم الفرد اللي بدك تدعوه.');
+    return;
+  }
+  familyMembers.push({ id: Math.random().toString(36).slice(2), name, relation });
+  closeMemberModal();
+  renderFamily();
+  saveUserData();
+}
+function copyInviteLink(){
+  const link = document.getElementById('invite-link').textContent;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(link).then(() => {
+      alert('انسخ الرابط! ابعته لأي فرد من عائلتك.');
+    }).catch(() => {
+      alert('ما قدرنا ننسخ تلقائيًا — انسخ الرابط يدويًا: ' + link);
+    });
+  } else {
+    alert('انسخ الرابط يدويًا: ' + link);
+  }
+}
+
+function deleteReminder(id){
+  reminders = reminders.filter(r => r.id !== id);
+  renderDashboard();
+  saveUserData();
+}
+
+/* ===================== ADD MODAL ===================== */
+function toggleCostField(){
+  const cat = document.getElementById('f-cat').value;
+  document.getElementById('f-cost-wrap').style.display = (cat === 'subs') ? 'block' : 'none';
+}
+function openModal(){
+  document.getElementById('f-title').value = '';
+  document.getElementById('f-date').value = '';
+  document.getElementById('f-recur').value = 'once';
+  document.getElementById('f-cat').value = 'other';
+  document.getElementById('f-cost').value = '';
+  toggleCostField();
+  document.getElementById('modal-overlay').classList.add('active');
+}
+function closeModal(){
+  document.getElementById('modal-overlay').classList.remove('active');
+}
+function addReminder(){
+  const title = document.getElementById('f-title').value.trim();
+  const date = document.getElementById('f-date').value;
+  const recur = document.getElementById('f-recur').value;
+  const cat = document.getElementById('f-cat').value;
+  const cost = document.getElementById('f-cost').value;
+  if(!title || !date){
+    alert('لازم تعبي العنوان والتاريخ.');
+    return;
+  }
+  const quota = getCurrentPlan().quota;
+  if(reminders.length >= quota){
+    const upgrade = confirm(`وصلت للحد الأقصى (${quota} تذكير) لخطتك الحالية "${PLAN_LABELS[currentPlan]}". تحب تشوف خطط أعلى؟`);
+    closeModal();
+    if(upgrade) showSubscription();
+    return;
+  }
+  reminders.push({
+    id: Math.random().toString(36).slice(2),
+    title, date, recur, cat,
+    used: true,
+    cost: (cat === 'subs' && cost) ? Number(cost) : null,
+    shared: false
+  });
+  closeModal();
+  renderDashboard();
+  saveUserData();
+}
+
+/* ===================== INIT ===================== */
+renderRoleGrid();
+updateNavUI();
+updatePlanBadges();
+switchAuthTab('login');
+renderLandingPlans();
+</script>
+</body>
+</html>
