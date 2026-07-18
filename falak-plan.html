@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>فلك — خطة تطوير المساعد الذكي للحياة اليومية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#161A2E;
+    --surface:#1F2444;
+    --surface-2:#262C52;
+    --fog:#EDEFF7;
+    --fog-dim:#B7BAD6;
+    --amber:#FFB454;
+    --mint:#7FD8BE;
+    --rose:#E8899A;
+    --line:rgba(237,239,247,0.09);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--fog);
+    font-family:'IBM Plex Sans Arabic', sans-serif;
+    font-weight:400;
+    line-height:1.8;
+  }
+  h1,h2,h3,h4, .display{
+    font-family:'Tajawal', sans-serif;
+  }
+  .mono{
+    font-family:'JetBrains Mono', monospace;
+    letter-spacing:0.02em;
+  }
+  a{color:inherit;}
+
+  /* Layout */
+  .shell{
+    display:grid;
+    grid-template-columns: 1fr 280px;
+    max-width:1240px;
+    margin:0 auto;
+  }
+  @media (max-width: 900px){
+    .shell{grid-template-columns: 1fr;}
+    .sidebar{display:none;}
+  }
+
+  /* Sidebar */
+  .sidebar{
+    position:sticky;
+    top:0;
+    height:100vh;
+    padding:36px 20px 36px 0;
+    border-left:1px solid var(--line);
+    overflow-y:auto;
+  }
+  .sidebar-brand{
+    font-family:'Tajawal', sans-serif;
+    font-weight:900;
+    font-size:22px;
+    color:var(--fog);
+    margin-bottom:4px;
+  }
+  .sidebar-tag{
+    font-size:12px;
+    color:var(--fog-dim);
+    margin-bottom:28px;
+  }
+  .nav-group-label{
+    font-size:11px;
+    color:var(--fog-dim);
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    margin:20px 0 8px;
+    font-family:'JetBrains Mono', monospace;
+  }
+  .nav-link{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 10px;
+    border-radius:8px;
+    font-size:14px;
+    color:var(--fog-dim);
+    text-decoration:none;
+    cursor:pointer;
+    transition:all .15s ease;
+    border-right:2px solid transparent;
+  }
+  .nav-link:hover{ color:var(--fog); background:rgba(255,255,255,0.03); }
+  .nav-link.active{
+    color:var(--fog);
+    background:rgba(255,180,84,0.08);
+    border-right:2px solid var(--amber);
+  }
+  .nav-dot{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--fog-dim); flex-shrink:0;
+  }
+  .nav-link.active .nav-dot{ background:var(--amber); }
+
+  /* Main content */
+  .main{ padding:0 48px; }
+  @media (max-width:900px){ .main{padding:0 20px;} }
+  section{ padding:80px 0; border-bottom:1px solid var(--line); }
+  section:last-child{ border-bottom:none; }
+
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--amber);
+    letter-spacing:0.1em;
+    margin-bottom:14px;
+    display:block;
+  }
+  h2.section-title{
+    font-size:34px;
+    font-weight:900;
+    margin:0 0 8px;
+  }
+  .section-sub{
+    color:var(--fog-dim);
+    font-size:16px;
+    max-width:640px;
+    margin-bottom:40px;
+  }
+
+  /* HERO */
+  .hero{ padding:64px 0 40px; border-bottom:1px solid var(--line);}
+  .hero-kicker{
+    font-family:'JetBrains Mono', monospace;
+    color:var(--mint);
+    font-size:13px;
+    letter-spacing:0.12em;
+    margin-bottom:18px;
+  }
+  .hero h1{
+    font-size:56px;
+    font-weight:900;
+    line-height:1.15;
+    margin:0 0 20px;
+    max-width:720px;
+  }
+  .hero h1 span{ color:var(--amber); }
+  .hero p{
+    font-size:18px;
+    color:var(--fog-dim);
+    max-width:560px;
+    margin-bottom:40px;
+  }
+
+  /* Orbit signature element */
+  .orbit-wrap{
+    position:relative;
+    width:100%;
+    max-width:520px;
+    aspect-ratio:1/1;
+    margin:20px auto 10px;
+  }
+  .orbit-ring{
+    position:absolute;
+    border:1px solid var(--line);
+    border-radius:50%;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+  }
+  .r1{ width:100%; height:100%; animation: spin 60s linear infinite; }
+  .r2{ width:72%; height:72%; animation: spin 40s linear infinite reverse; }
+  .r3{ width:42%; height:42%; }
+  @media (prefers-reduced-motion: reduce){
+    .r1, .r2 { animation: none; }
+  }
+  @keyframes spin{ from{transform:translate(-50%,-50%) rotate(0deg);} to{transform:translate(-50%,-50%) rotate(360deg);} }
+  .orbit-core{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:88px; height:88px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #2C335E, #1B2044);
+    border:1px solid rgba(255,180,84,0.4);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Tajawal',sans-serif; font-weight:900; font-size:15px;
+    color:var(--amber);
+    box-shadow:0 0 40px rgba(255,180,84,0.15);
+    z-index:3;
+  }
+  .orbit-node{
+    position:absolute;
+    width:auto;
+    padding:7px 14px;
+    border-radius:20px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    font-size:12.5px;
+    white-space:nowrap;
+    display:flex; align-items:center; gap:6px;
+    z-index:2;
+  }
+  .orbit-node .dot{ width:6px;height:6px;border-radius:50%; }
+  .n1{ top:2%; left:50%; transform:translate(-50%,0); }
+  .n2{ top:24%; right:0%; }
+  .n3{ bottom:24%; right:2%; }
+  .n4{ bottom:2%; left:50%; transform:translate(-50%,0); }
+  .n5{ bottom:24%; left:2%; }
+  .n6{ top:24%; left:0%; }
+
+  /* Cards */
+  .card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:28px;
+  }
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+  @media (max-width:760px){ .grid-2, .grid-3{ grid-template-columns:1fr; } }
+
+  /* Layer sections */
+  .layer-head{
+    display:flex; align-items:center; gap:16px; margin-bottom:6px;
+  }
+  .layer-num{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    color:var(--bg);
+    background:var(--amber);
+    width:34px; height:34px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700;
+    flex-shrink:0;
+  }
+  .layer-title{ font-size:26px; font-weight:900; margin:0; }
+  .layer-meta{
+    display:flex; gap:10px; margin:14px 0 24px; flex-wrap:wrap;
+  }
+  .pill{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11.5px;
+    padding:5px 12px;
+    border-radius:20px;
+    border:1px solid var(--line);
+    color:var(--fog-dim);
+  }
+  .pill.impact-high{ color:var(--mint); border-color:rgba(127,216,190,0.3); }
+  .pill.effort-high{ color:var(--rose); border-color:rgba(232,137,154,0.3); }
+  .pill.effort-med{ color:var(--amber); border-color:rgba(255,180,84,0.3); }
+  .pill.effort-low{ color:var(--mint); border-color:rgba(127,216,190,0.3); }
+
+  .feat-list{ list-style:none; padding:0; margin:0; }
+  .feat-list li{
+    padding:12px 0;
+    border-top:1px solid var(--line);
+    display:flex; gap:12px; align-items:flex-start;
+    font-size:14.5px;
+    color:var(--fog-dim);
+  }
+  .feat-list li:first-child{ border-top:none; }
+  .feat-list li::before{
+    content:"—";
+    color:var(--amber);
+    flex-shrink:0;
+  }
+  .why-box{
+    margin-top:20px;
+    padding:18px 20px;
+    background:var(--surface-2);
+    border-radius:10px;
+    border-right:3px solid var(--mint);
+    font-size:14.5px;
+  }
+  .why-box b{ color:var(--mint); font-family:'Tajawal',sans-serif; }
+
+  /* Pricing */
+  .price-card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:28px;
+    display:flex; flex-direction:column;
+  }
+  .price-card.featured{ border-color:var(--amber); background:linear-gradient(160deg, var(--surface), #2A2445); }
+  .price-name{ font-weight:700; font-family:'Tajawal',sans-serif; font-size:18px; margin-bottom:6px; }
+  .price-value{ font-size:32px; font-weight:900; font-family:'Tajawal',sans-serif; margin-bottom:18px; }
+  .price-value span{ font-size:13px; color:var(--fog-dim); font-weight:400; font-family:'IBM Plex Sans Arabic',sans-serif; }
+  .price-card ul{ list-style:none; padding:0; margin:0 0 20px; flex-grow:1; }
+  .price-card li{ font-size:13.5px; color:var(--fog-dim); padding:7px 0; display:flex; gap:8px; }
+  .price-card li::before{ content:"✓"; color:var(--mint); }
+
+  /* Roadmap timeline */
+  .timeline{ position:relative; padding-right:28px; }
+  .timeline::before{
+    content:""; position:absolute; right:6px; top:6px; bottom:6px; width:1px; background:var(--line);
+  }
+  .t-item{ position:relative; padding-bottom:44px; }
+  .t-item:last-child{ padding-bottom:0; }
+  .t-item::before{
+    content:""; position:absolute; right:-28px; top:4px; width:12px; height:12px; border-radius:50%;
+    background:var(--bg); border:2px solid var(--amber);
+  }
+  .t-phase{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--amber); margin-bottom:6px; }
+  .t-title{ font-weight:700; font-family:'Tajawal',sans-serif; font-size:19px; margin-bottom:8px; }
+  .t-desc{ color:var(--fog-dim); font-size:14.5px; max-width:600px; }
+
+  /* checklist */
+  .checklist{ list-style:none; padding:0; margin:0; }
+  .checklist li{
+    display:flex; align-items:center; gap:12px;
+    padding:14px 16px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    margin-bottom:10px;
+    cursor:pointer;
+    font-size:14.5px;
+    transition:all .15s ease;
+  }
+  .checklist li:hover{ border-color:rgba(255,180,84,0.4); }
+  .checklist li.done{ opacity:0.5; text-decoration:line-through; }
+  .checkbox{
+    width:18px; height:18px; border-radius:5px; border:1.5px solid var(--fog-dim);
+    flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px;
+  }
+  .checklist li.done .checkbox{ background:var(--mint); border-color:var(--mint); color:#161A2E; }
+
+  .growth-item{ display:flex; gap:16px; padding:20px 0; border-top:1px solid var(--line); }
+  .growth-item:first-child{ border-top:none; }
+  .growth-icon{ font-size:22px; flex-shrink:0; width:36px; }
+  .growth-title{ font-weight:700; font-family:'Tajawal',sans-serif; margin-bottom:4px; }
+  .growth-desc{ color:var(--fog-dim); font-size:14.5px; }
+
+  footer{ padding:40px 0 80px; color:var(--fog-dim); font-size:13px; text-align:center; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <main class="main">
+
+    <!-- HERO -->
+    <section class="hero" id="overview">
+      <div class="hero-kicker mono">خطة منتج · مساعد ذكي لأمور الحياة اليومية</div>
+      <h1>فلك<br><span>— حياتك اليومية، كلها في مكان واحد.</span></h1>
+      <p>مساعد ذكي يجمع كل التزاماتك المتباعدة بالزمن — الوثائق، الاشتراكات، الصحة، السيارة، العائلة — في فلك واحد يتابعه عنك، يذكّرك في الوقت الصح، وينصحك بالخطوة التالية.</p>
+
+      <div class="orbit-wrap">
+        <div class="orbit-ring r1"></div>
+        <div class="orbit-ring r2"></div>
+        <div class="orbit-ring r3"></div>
+        <div class="orbit-core">أنت</div>
+        <div class="orbit-node n1"><span class="dot" style="background:var(--amber)"></span> الوثائق</div>
+        <div class="orbit-node n2"><span class="dot" style="background:var(--mint)"></span> الاشتراكات</div>
+        <div class="orbit-node n3"><span class="dot" style="background:var(--rose)"></span> العائلة</div>
+        <div class="orbit-node n4"><span class="dot" style="background:var(--amber)"></span> السيارة</div>
+        <div class="orbit-node n5"><span class="dot" style="background:var(--mint)"></span> الصحة</div>
+        <div class="orbit-node n6"><span class="dot" style="background:var(--rose)"></span> العمل</div>
+      </div>
+
+      <div class="grid-3" style="margin-top:56px;">
+        <div class="card">
+          <div class="eyebrow">المشكلة</div>
+          <p style="margin:0; font-size:14.5px; color:var(--fog-dim);">التزامات "غير يومية" (سنوية، موسمية، متقطعة) بتتنسى بسهولة، وعقابها فلوس أو وقت ضائع.</p>
+        </div>
+        <div class="card">
+          <div class="eyebrow">الحل</div>
+          <p style="margin:0; font-size:14.5px; color:var(--fog-dim);">مساعد واحد يفهم، يتابع، ويقترح — بدل خمس تطبيقات وتقويم منسي.</p>
+        </div>
+        <div class="card">
+          <div class="eyebrow">نموذج الربح</div>
+          <p style="margin:0; font-size:14.5px; color:var(--fog-dim);">اشتراك شهري بسيط، بمستويات (مجاني / فردي / عائلي)، يكبر مع كل طبقة جديدة.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- LAYER 1 -->
+    <section id="layer1">
+      <span class="eyebrow">الطبقة 1</span>
+      <div class="layer-head">
+        <div class="layer-num">01</div>
+        <h3 class="layer-title">القراءة الذكية للوثائق</h3>
+      </div>
+      <div class="layer-meta">
+        <span class="pill impact-high">أثر أول انطباع: مرتفع</span>
+        <span class="pill effort-high">جهد تطوير: مرتفع</span>
+        <span class="pill">تقنية أساسية: OCR + LLM</span>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h4 style="margin-top:0;">الميزات</h4>
+          <ul class="feat-list">
+            <li>تصوير أو رفع وثيقة (رخصة، جواز سفر، بوليصة تأمين) واستخراج تاريخ الانتهاء تلقائيًا</li>
+            <li>فهم جملة مكتوبة بلغة طبيعية مثل «لازم أجدد رخصتي بعد شهرين» وتحويلها لتذكير فورًا</li>
+            <li>اقتراح تصنيف الوثيقة تلقائيًا (سيارة، سفر، تأمين...) بدون تدخل يدوي</li>
+            <li>حفظ نسخة رقمية آمنة من الوثيقة مرتبطة بالتذكير نفسه</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4 style="margin-top:0;">كيف تُبنى تقنيًا</h4>
+          <ul class="feat-list">
+            <li>استخراج نص من الصورة عبر محرك OCR (يدعم العربية والإنجليزية)</li>
+            <li>تمرير النص لنموذج ذكاء اصطناعي لاستخراج التاريخ ونوع الوثيقة بصيغة منظمة (JSON)</li>
+            <li>معالجة تحقق بسيطة يعرضها للمستخدم قبل الحفظ (تأكيد بدل تصحيح كامل)</li>
+            <li>تخزين الصورة مشفّرة، مرتبطة بسجل التذكير</li>
+          </ul>
+        </div>
+      </div>
+      <div class="why-box"><b>ليش هذي الطبقة مهمة:</b> هي أول لحظة "واو" يعيشها المستخدم — بدل ما يعبّي نموذج طويل، بيصوّر وثيقة وخلص. هذا النوع من التجارب هو اللي بيخلي الناس يشاركوا الموقع مع أصحابهم بشكل طبيعي.</div>
+    </section>
+
+    <!-- LAYER 2 -->
+    <section id="layer2">
+      <span class="eyebrow">الطبقة 2</span>
+      <div class="layer-head">
+        <div class="layer-num">02</div>
+        <h3 class="layer-title">المساعد الاستباقي</h3>
+      </div>
+      <div class="layer-meta">
+        <span class="pill impact-high">أثر: يحوّل الأداة إلى مستشار</span>
+        <span class="pill effort-med">جهد تطوير: متوسط</span>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h4 style="margin-top:0;">الميزات</h4>
+          <ul class="feat-list">
+            <li>توقيت تذكير ذكي حسب نوع الالتزام (تجديد رخصة يحتاج تنبيه قبل شهر، فاتورة تحتاج يومين)</li>
+            <li>رصد اشتراكات لم تُستخدم فعليًا واقتراح إلغائها</li>
+            <li>ملخص شهري: «هذا ما دفعته على التزامات هذا الشهر، وهذه أكثر 3 بنود»</li>
+            <li>اقتراحات توفير مبنية على نمط إنفاق التزامات المستخدم نفسه</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4 style="margin-top:0;">كيف تُبنى تقنيًا</h4>
+          <ul class="feat-list">
+            <li>قواعد منطقية بسيطة لكل نوع التزام (جدول توقيت افتراضي قابل للتخصيص)</li>
+            <li>طبقة توليد نص (LLM) تحوّل الأرقام والبيانات لملخص مكتوب بلغة طبيعية وودّية</li>
+            <li>تتبع بسيط لتفاعل المستخدم مع كل التزام لقياس «هل ما زال يُستخدم»</li>
+          </ul>
+        </div>
+      </div>
+      <div class="why-box"><b>ليش هذي الطبقة مهمة:</b> الفرق بين "تقويم" و"مساعد" هو المبادرة. هذه الطبقة هي اللي بتبرر الاشتراك المدفوع — الناس بتدفع مقابل نصيحة توفّرلها فلوس، مش بس مقابل تذكير.</div>
+    </section>
+
+    <!-- LAYER 3 -->
+    <section id="layer3">
+      <span class="eyebrow">الطبقة 3</span>
+      <div class="layer-head">
+        <div class="layer-num">03</div>
+        <h3 class="layer-title">التخصيص حسب أدوار الحياة</h3>
+      </div>
+      <div class="layer-meta">
+        <span class="pill impact-high">أثر: تخصيص فوري عند التسجيل</span>
+        <span class="pill effort-low">جهد تطوير: منخفض</span>
+        <span class="pill" style="border-color:var(--mint); color:var(--mint);">أفضل نقطة بداية (MVP)</span>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h4 style="margin-top:0;">الميزات</h4>
+          <ul class="feat-list">
+            <li>اختيار وضع الحياة عند التسجيل: طالب، موظف، صاحب سيارة، أب/أم، صاحب عمل صغير</li>
+            <li>قائمة تذكيرات جاهزة تُقترح تلقائيًا حسب الدور المختار</li>
+            <li>إمكانية اختيار أكثر من دور في نفس الوقت (مثلاً: أب + صاحب سيارة)</li>
+            <li>تعديل أو حذف أي عنصر من القائمة المقترحة بسهولة</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4 style="margin-top:0;">كيف تُبنى تقنيًا</h4>
+          <ul class="feat-list">
+            <li>قوالب بيانات جاهزة (ملفات JSON) لكل دور، سهلة التوسعة لاحقًا</li>
+            <li>واجهة اختيار بصرية بسيطة (بطاقات) بدل نموذج تسجيل طويل</li>
+            <li>لا تحتاج ذكاء اصطناعي إطلاقًا — منطق ثابت بسيط</li>
+          </ul>
+        </div>
+      </div>
+      <div class="why-box"><b>ليش نبدأ من هون:</b> هذه أسهل طبقة تقنيًا (بدون AI، بدون OCR، بدون تكاملات خارجية) لكنها الأعلى أثرًا على أول انطباع. تقدر تبني نسخة أولى كاملة منها خلال أيام قليلة وتجربها فعليًا.</div>
+    </section>
+
+    <!-- LAYER 4 -->
+    <section id="layer4">
+      <span class="eyebrow">الطبقة 4</span>
+      <div class="layer-head">
+        <div class="layer-num">04</div>
+        <h3 class="layer-title">الطبقة الاجتماعية والمشاركة</h3>
+      </div>
+      <div class="layer-meta">
+        <span class="pill impact-high">أثر: نمو عضوي بدون إعلانات</span>
+        <span class="pill effort-med">جهد تطوير: متوسط</span>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h4 style="margin-top:0;">الميزات</h4>
+          <ul class="feat-list">
+            <li>مشاركة تذكير واحد مع فرد آخر (زوج/زوجة، أهل) لمتابعة مشتركة</li>
+            <li>مساحة عائلية: تذكيرات بيت مشتركة (صيانة، فواتير مشتركة)</li>
+            <li>«أرسل هذه القائمة لصديقك» — مشاركة قائمة تذكيرات جاهزة حسب الدور</li>
+            <li>نظام إحالة بسيط: مزايا إضافية مقابل دعوة أصدقاء</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4 style="margin-top:0;">كيف تُبنى تقنيًا</h4>
+          <ul class="feat-list">
+            <li>نظام صلاحيات بسيط لمشاركة سجل بين أكثر من حساب</li>
+            <li>روابط دعوة قابلة للتتبع (لمعرفة مصدر المستخدمين الجدد)</li>
+            <li>لا يحتاج بنية معقدة — امتداد بسيط لقاعدة البيانات الحالية</li>
+          </ul>
+        </div>
+      </div>
+      <div class="why-box"><b>ليش هذي الطبقة مهمة:</b> هذه الطبقة هي محرك الانتشار الطبيعي — بدل ما تدفع على إعلانات، المستخدمين أنفسهم بيجيبوا مستخدمين جدد لأن الأداة أصلًا مصممة للمشاركة (عائلة، أصدقاء بنفس الوضع).</div>
+    </section>
+
+    <!-- LAYER 5 -->
+    <section id="layer5">
+      <span class="eyebrow">الطبقة 5</span>
+      <div class="layer-head">
+        <div class="layer-num">05</div>
+        <h3 class="layer-title">قنوات التنبيه الذكية</h3>
+      </div>
+      <div class="layer-meta">
+        <span class="pill impact-high">أثر: يرفع معدل الالتزام الفعلي</span>
+        <span class="pill effort-high">جهد تطوير: مرتفع (تكاملات + تكلفة)</span>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h4 style="margin-top:0;">الميزات</h4>
+          <ul class="feat-list">
+            <li>تنبيهات عبر واتساب، إيميل، وإشعارات جوال (بدل الاعتماد على فتح الموقع فقط)</li>
+            <li>توقيت ذكي يتعلّم من وقت تفاعل المستخدم المعتاد مع تطبيقاته</li>
+            <li>رسائل تنبيه قابلة للتخصيص (نبرة رسمية أو ودّية)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4 style="margin-top:0;">كيف تُبنى تقنيًا</h4>
+          <ul class="feat-list">
+            <li>واتساب عبر WhatsApp Business API، إيميل عبر خدمة إرسال مثل SendGrid</li>
+            <li>إشعارات ويب/جوال قياسية (Push Notifications)</li>
+            <li>خوارزمية بسيطة لتحديد أفضل وقت إرسال بناءً على سجل تفاعل كل مستخدم</li>
+          </ul>
+        </div>
+      </div>
+      <div class="why-box"><b>ملاحظة:</b> هذه الطبقة فيها تكلفة تشغيلية فعلية (رسائل واتساب/إيميل بتكلف مع الحجم)، فالأفضل تأجيلها لمرحلة يكون فيها عدد مستخدمين كافٍ يبرر التكلفة والاشتراك المدفوع.</div>
+    </section>
+
+    <!-- BUSINESS MODEL -->
+    <section id="pricing">
+      <span class="eyebrow">نموذج العمل</span>
+      <h2 class="section-title">التسعير والاشتراكات</h2>
+      <p class="section-sub">ثلاث مستويات بسيطة، تكبر مع كل طبقة تضيفها للمنتج — الأرقام هنا اقتراحية، ممكن تُعدّل حسب السوق المستهدف.</p>
+      <div class="grid-3">
+        <div class="price-card">
+          <div class="price-name">مجاني</div>
+          <div class="price-value">0<span> / شهريًا</span></div>
+          <ul>
+            <li>حتى 5 تذكيرات نشطة</li>
+            <li>تنبيه داخل الموقع فقط</li>
+            <li>قوالب أدوار الحياة الأساسية</li>
+          </ul>
+        </div>
+        <div class="price-card featured">
+          <div class="price-name" style="color:var(--amber);">فردي</div>
+          <div class="price-value">اشتراك صغير<span> / شهريًا</span></div>
+          <ul>
+            <li>تذكيرات غير محدودة</li>
+            <li>قراءة ذكية للوثائق (تصوير واستخراج تلقائي)</li>
+            <li>ملخصات ونصائح استباقية شهرية</li>
+            <li>تنبيهات إيميل + واتساب</li>
+          </ul>
+        </div>
+        <div class="price-card">
+          <div class="price-name">عائلي</div>
+          <div class="price-value">اشتراك أعلى<span> / شهريًا</span></div>
+          <ul>
+            <li>كل مزايا الفردي</li>
+            <li>حتى 5 أفراد مشتركين</li>
+            <li>مساحة تذكيرات عائلية مشتركة</li>
+            <li>تقرير مصاريف التزامات موحّد للعائلة</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROADMAP -->
+    <section id="roadmap">
+      <span class="eyebrow">خارطة الطريق</span>
+      <h2 class="section-title">مراحل البناء</h2>
+      <p class="section-sub">تبدأ بأبسط نسخة ممكنة، بميزانية صفر، وتضيف طبقة كل ما توفّرت الموارد أو زاد عدد المستخدمين.</p>
+      <div class="timeline">
+        <div class="t-item">
+          <div class="t-phase mono">المرحلة 0 — الآن</div>
+          <div class="t-title">نسخة أولى مجانية (MVP)</div>
+          <div class="t-desc">الطبقة 3 فقط: تسجيل بسيط، اختيار دور الحياة، تذكيرات يدوية بتصنيفات جاهزة، لوحة رئيسية بصرية. تُبنى وتُستضاف مجانًا بالكامل.</div>
+        </div>
+        <div class="t-item">
+          <div class="t-phase mono">المرحلة 1</div>
+          <div class="t-title">إضافة الذكاء الاستباقي</div>
+          <div class="t-desc">تفعيل الطبقة 2: توقيت ذكي، رصد اشتراكات غير مستخدمة، ملخصات شهرية. إضافة تنبيهات عبر الإيميل.</div>
+        </div>
+        <div class="t-item">
+          <div class="t-phase mono">المرحلة 2</div>
+          <div class="t-title">القراءة الذكية للوثائق</div>
+          <div class="t-desc">تفعيل الطبقة 1: تصوير الوثائق واستخراج التواريخ تلقائيًا. هنا يبدأ أول اشتراك مدفوع فعلي.</div>
+        </div>
+        <div class="t-item">
+          <div class="t-phase mono">المرحلة 3</div>
+          <div class="t-title">النمو الاجتماعي</div>
+          <div class="t-desc">تفعيل الطبقة 4: المشاركة العائلية ونظام الإحالة. تفعيل تنبيهات واتساب من الطبقة 5.</div>
+        </div>
+        <div class="t-item">
+          <div class="t-phase mono">المرحلة 4</div>
+          <div class="t-title">التوسّع</div>
+          <div class="t-desc">شراكات (شركات تأمين، صيانة سيارات)، واجهة برمجية (API) عامة، تطبيق جوال مستقل.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GROWTH -->
+    <section id="growth">
+      <span class="eyebrow">التسويق والنمو</span>
+      <h2 class="section-title">كيف ننشر الموقع بميزانية منخفضة</h2>
+      <div class="card">
+        <div class="growth-item">
+          <div class="growth-icon">📱</div>
+          <div>
+            <div class="growth-title">محتوى قصير على تيك توك/إنستغرام</div>
+            <div class="growth-desc">فيديوهات «3 أشياء بتنسى كل سنة وبتكلفك فلوس» — محتوى قابل للمشاركة أكثر من إعلان مباشر.</div>
+          </div>
+        </div>
+        <div class="growth-item">
+          <div class="growth-icon">🔍</div>
+          <div>
+            <div class="growth-title">محتوى بحث (SEO) بالعربي</div>
+            <div class="growth-desc">مقالات بسيطة مثل «كيف أجدد رخصتي أونلاين» تجيب زيارات مجانية طويلة المدى من محرك البحث.</div>
+          </div>
+        </div>
+        <div class="growth-item">
+          <div class="growth-icon">🎯</div>
+          <div>
+            <div class="growth-title">نظام إحالة داخل المنتج</div>
+            <div class="growth-desc">ميزة إضافية مجانية مقابل دعوة صديق — الطبقة 4 مصممة أصلًا لخدمة هذا.</div>
+          </div>
+        </div>
+        <div class="growth-item">
+          <div class="growth-icon">👥</div>
+          <div>
+            <div class="growth-title">مجموعات وتجمعات محلية</div>
+            <div class="growth-desc">مشاركة الفكرة في مجموعات فيسبوك/واتساب المهتمة بالتنظيم الشخصي والإنتاجية.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEXT STEPS -->
+    <section id="next">
+      <span class="eyebrow">الخطوات القادمة</span>
+      <h2 class="section-title">من الفكرة إلى أول نسخة حقيقية</h2>
+      <p class="section-sub">اضغط على أي بند لتحديده كمُنجز أثناء تقدّمك (هذا العرض للتخطيط فقط، ولا يحفظ التقدم بعد إغلاق الصفحة).</p>
+      <ul class="checklist" id="checklist">
+        <li onclick="toggleDone(this)"><span class="checkbox">✓</span> اختيار اسم نهائي للموقع وتوثيق النطاق (دومين) المجاني/الرخيص</li>
+        <li onclick="toggleDone(this)"><span class="checkbox">✓</span> رسم قائمة أدوار الحياة الأولى (5 أدوار) وتذكيراتها الجاهزة</li>
+        <li onclick="toggleDone(this)"><span class="checkbox">✓</span> بناء نسخة أولى تفاعلية (Prototype) للطبقة 3 فقط</li>
+        <li onclick="toggleDone(this)"><span class="checkbox">✓</span> تجربة النسخة الأولى مع 5-10 أشخاص حقيقيين وجمع ملاحظاتهم</li>
+        <li onclick="toggleDone(this)"><span class="checkbox">✓</span> اختيار منصة استضافة مجانية والنشر الفعلي</li>
+        <li onclick="toggleDone(this)"><span class="checkbox">✓</span> تجهيز أول محتوى تسويقي قصير (فيديو أو منشور) لجذب أول 50 مستخدم</li>
+      </ul>
+    </section>
+
+    <footer>خطة منتج أولية — قابلة للتعديل والتوسع مع كل مرحلة نقاش جديدة.</footer>
+  </main>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-brand">فلك</div>
+    <div class="sidebar-tag">خطة تطوير المساعد الذكي</div>
+
+    <div class="nav-group-label">البداية</div>
+    <a class="nav-link" data-target="overview"><span class="nav-dot"></span> نظرة عامة</a>
+
+    <div class="nav-group-label">الطبقات الخمس</div>
+    <a class="nav-link" data-target="layer1"><span class="nav-dot"></span> 01 · القراءة الذكية للوثائق</a>
+    <a class="nav-link" data-target="layer2"><span class="nav-dot"></span> 02 · المساعد الاستباقي</a>
+    <a class="nav-link" data-target="layer3"><span class="nav-dot"></span> 03 · أدوار الحياة</a>
+    <a class="nav-link" data-target="layer4"><span class="nav-dot"></span> 04 · المشاركة الاجتماعية</a>
+    <a class="nav-link" data-target="layer5"><span class="nav-dot"></span> 05 · قنوات التنبيه</a>
+
+    <div class="nav-group-label">العمل والنمو</div>
+    <a class="nav-link" data-target="pricing"><span class="nav-dot"></span> التسعير</a>
+    <a class="nav-link" data-target="roadmap"><span class="nav-dot"></span> خارطة الطريق</a>
+    <a class="nav-link" data-target="growth"><span class="nav-dot"></span> التسويق والنمو</a>
+    <a class="nav-link" data-target="next"><span class="nav-dot"></span> الخطوات القادمة</a>
+  </nav>
+</div>
+
+<script>
+  const links = document.querySelectorAll('.nav-link');
+  const sections = Array.from(links).map(l => document.getElementById(l.dataset.target));
+
+  links.forEach(link => {
+    link.addEventListener('click', () => {
+      document.getElementById(link.dataset.target).scrollIntoView({behavior:'smooth'});
+    });
+  });
+
+  function setActive(id){
+    links.forEach(l => l.classList.toggle('active', l.dataset.target === id));
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        setActive(entry.target.id);
+      }
+    });
+  }, { rootMargin: '-40% 0px -50% 0px', threshold: 0 });
+
+  sections.forEach(s => s && observer.observe(s));
+  setActive('overview');
+
+  function toggleDone(el){
+    el.classList.toggle('done');
+  }
+</script>
+</body>
+</html>

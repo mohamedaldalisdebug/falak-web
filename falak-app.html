@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>فلك — حياتك اليومية، كلها في مكان واحد</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#161A2E;
+    --surface:#1F2444;
+    --surface-2:#262C52;
+    --fog:#EDEFF7;
+    --fog-dim:#B7BAD6;
+    --amber:#FFB454;
+    --mint:#7FD8BE;
+    --rose:#E8899A;
+    --line:rgba(237,239,247,0.09);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--fog);
+    font-family:'IBM Plex Sans Arabic', sans-serif;
+    line-height:1.7;
+    min-height:100vh;
+  }
+  h1,h2,h3,h4,.display{ font-family:'Tajawal', sans-serif; }
+  .mono{ font-family:'JetBrains Mono', monospace; }
+  button{ font-family:inherit; cursor:pointer; }
+  input,select{ font-family:inherit; }
+
+  .screen{ display:none; min-height:100vh; }
+  .screen.active{ display:block; }
+
+  /* ===== Top bar (shared) ===== */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 48px;
+    border-bottom:1px solid var(--line);
+  }
+  @media (max-width:700px){ .topbar{ padding:16px 20px; } }
+  .brand{ font-weight:900; font-size:20px; }
+  .brand span{ color:var(--amber); }
+
+  /* ===== LANDING ===== */
+  .landing-hero{
+    max-width:720px; margin:0 auto; text-align:center;
+    padding:100px 24px 60px;
+  }
+  .kicker{
+    font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--mint);
+    letter-spacing:0.12em; margin-bottom:20px;
+  }
+  .landing-hero h1{ font-size:48px; font-weight:900; margin:0 0 20px; line-height:1.2; }
+  .landing-hero h1 span{ color:var(--amber); }
+  .landing-hero p{ font-size:17px; color:var(--fog-dim); margin-bottom:36px; }
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:14px 28px; border-radius:10px; border:none;
+    font-weight:700; font-size:15px;
+    transition:transform .15s ease, opacity .15s ease;
+  }
+  .btn:hover{ transform:translateY(-1px); }
+  .btn-primary{ background:var(--amber); color:#1B1200; }
+  .btn-ghost{ background:transparent; color:var(--fog); border:1px solid var(--line); }
+  .btn-mint{ background:var(--mint); color:#08261D; }
+
+  .landing-feats{
+    max-width:960px; margin:0 auto; padding:20px 24px 100px;
+    display:grid; grid-template-columns:repeat(3,1fr); gap:20px;
+  }
+  @media (max-width:760px){ .landing-feats{ grid-template-columns:1fr; } }
+  .feat-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:26px;
+  }
+  .feat-card .ic{ font-size:24px; margin-bottom:12px; display:block; }
+  .feat-card h4{ margin:0 0 8px; font-size:16px; }
+  .feat-card p{ margin:0; font-size:13.5px; color:var(--fog-dim); }
+
+  /* ===== ONBOARDING ===== */
+  .onboard-wrap{ max-width:720px; margin:0 auto; padding:70px 24px; }
+  .onboard-wrap h2{ font-size:28px; margin-bottom:6px; }
+  .onboard-wrap .sub{ color:var(--fog-dim); margin-bottom:36px; font-size:15px; }
+  .role-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-bottom:36px; }
+  @media (max-width:600px){ .role-grid{ grid-template-columns:1fr; } }
+  .role-card{
+    background:var(--surface); border:1.5px solid var(--line); border-radius:12px;
+    padding:20px; display:flex; align-items:center; gap:14px;
+    transition:all .15s ease; user-select:none;
+  }
+  .role-card:hover{ border-color:rgba(255,180,84,0.4); }
+  .role-card.selected{ border-color:var(--amber); background:rgba(255,180,84,0.08); }
+  .role-card .ic{ font-size:26px; }
+  .role-card .name{ font-weight:700; font-size:15px; }
+  .role-card .desc{ font-size:12.5px; color:var(--fog-dim); }
+  .role-check{
+    margin-right:auto; width:20px; height:20px; border-radius:6px;
+    border:1.5px solid var(--fog-dim); display:flex; align-items:center; justify-content:center;
+    font-size:12px; flex-shrink:0;
+  }
+  .role-card.selected .role-check{ background:var(--amber); border-color:var(--amber); color:#1B1200; }
+
+  /* ===== DASHBOARD ===== */
+  .dash-wrap{ max-width:920px; margin:0 auto; padding:36px 24px 80px; }
+  .dash-head{ display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:14px;}
+  .dash-head h2{ font-size:26px; margin:0 0 4px; }
+  .dash-head .sub{ color:var(--fog-dim); font-size:14px; margin:0; }
+
+  .group-label{
+    font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--fog-dim);
+    letter-spacing:0.08em; text-transform:uppercase; margin:28px 0 12px;
+  }
+  .reminder-list{ display:flex; flex-direction:column; gap:10px; }
+  .reminder-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:16px 18px; display:flex; align-items:center; gap:14px;
+  }
+  .urgency-dot{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .urgency-dot.urgent{ background:var(--rose); }
+  .urgency-dot.soon{ background:var(--amber); }
+  .urgency-dot.later{ background:var(--mint); }
+  .r-info{ flex-grow:1; min-width:0; }
+  .r-title{ font-weight:700; font-size:14.5px; margin-bottom:2px; }
+  .r-meta{ font-size:12.5px; color:var(--fog-dim); }
+  .r-cat{
+    font-size:11px; padding:4px 10px; border-radius:20px; border:1px solid var(--line); color:var(--fog-dim);
+    flex-shrink:0; white-space:nowrap;
+  }
+  .r-days{ font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--fog-dim); flex-shrink:0; width:70px; text-align:left; }
+  .r-del{
+    background:transparent; border:none; color:var(--fog-dim); font-size:16px; flex-shrink:0; opacity:0.5;
+  }
+  .r-del:hover{ opacity:1; color:var(--rose); }
+
+  .empty{ text-align:center; padding:40px 20px; color:var(--fog-dim); font-size:14px; }
+
+  .fab{
+    position:fixed; bottom:28px; left:28px;
+    background:var(--amber); color:#1B1200; border:none; border-radius:30px;
+    padding:15px 24px; font-weight:700; font-size:14.5px;
+    box-shadow:0 8px 24px rgba(255,180,84,0.25);
+    display:flex; align-items:center; gap:8px;
+  }
+
+  /* ===== MODAL ===== */
+  .overlay{
+    display:none; position:fixed; inset:0; background:rgba(10,12,24,0.6);
+    align-items:center; justify-content:center; z-index:50; padding:20px;
+  }
+  .overlay.active{ display:flex; }
+  .modal{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:28px; width:100%; max-width:440px;
+  }
+  .modal h3{ margin:0 0 20px; font-size:19px; }
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-size:13px; color:var(--fog-dim); margin-bottom:6px; }
+  .field input, .field select{
+    width:100%; padding:11px 14px; border-radius:8px; border:1px solid var(--line);
+    background:var(--surface-2); color:var(--fog); font-size:14px;
+  }
+  .field input:focus, .field select:focus{ outline:2px solid var(--amber); outline-offset:1px; }
+  .modal-actions{ display:flex; gap:10px; margin-top:22px; }
+  .modal-actions .btn{ flex:1; justify-content:center; }
+
+  .top-actions{ display:flex; gap:10px; align-items:center; }
+</style>
+</head>
+<body>
+
+<!-- ===================== SCREEN 1: LANDING ===================== -->
+<div class="screen active" id="screen-landing">
+  <div class="topbar">
+    <div class="brand">فلك</div>
+    <button class="btn btn-ghost" onclick="goTo('onboarding')">تسجيل الدخول</button>
+  </div>
+
+  <div class="landing-hero">
+    <div class="kicker">مساعد ذكي لأمور الحياة اليومية</div>
+    <h1>حياتك اليومية،<br><span>كلها في فلك واحد.</span></h1>
+    <p>الوثائق، الاشتراكات، السيارة، الصحة، العائلة — كل الالتزامات اللي بتتنسى بسهولة، بمكان واحد يذكّرك بالوقت الصح.</p>
+    <button class="btn btn-primary" onclick="goTo('onboarding')">ابدأ مجانًا ←</button>
+  </div>
+
+  <div class="landing-feats">
+    <div class="feat-card">
+      <span class="ic">🧭</span>
+      <h4>تخصيص فوري</h4>
+      <p>اختر وضعك (طالب، موظف، صاحب سيارة...) وخذ قائمة تذكيرات جاهزة خلال ثانية.</p>
+    </div>
+    <div class="feat-card">
+      <span class="ic">📸</span>
+      <h4>صوّر وثيقتك وخلص</h4>
+      <p>صوّر أي وثيقة وخلي فلك يستخرج تاريخ الانتهاء تلقائيًا (قريبًا).</p>
+    </div>
+    <div class="feat-card">
+      <span class="ic">👨‍👩‍👧</span>
+      <h4>مشاركة عائلية</h4>
+      <p>تابع التزامات البيت مع عائلتك من مكان واحد.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 2: ONBOARDING ===================== -->
+<div class="screen" id="screen-onboarding">
+  <div class="topbar">
+    <div class="brand">فلك</div>
+  </div>
+  <div class="onboard-wrap">
+    <h2>وش وضعك الحالي؟</h2>
+    <p class="sub">اختر واحد أو أكثر — راح نجهزلك قائمة تذكيرات مناسبة مباشرة. تقدر تعدّلها لاحقًا وقتما تحب.</p>
+
+    <div class="role-grid" id="role-grid"></div>
+
+    <button class="btn btn-primary" onclick="finishOnboarding()">تابع إلى لوحتي ←</button>
+  </div>
+</div>
+
+<!-- ===================== SCREEN 3: DASHBOARD ===================== -->
+<div class="screen" id="screen-dashboard">
+  <div class="topbar">
+    <div class="brand">فلك</div>
+    <div class="top-actions">
+      <button class="btn btn-ghost" onclick="goTo('onboarding')">تعديل وضعي</button>
+    </div>
+  </div>
+  <div class="dash-wrap">
+    <div class="dash-head">
+      <div>
+        <h2>لوحتك</h2>
+        <p class="sub" id="dash-sub">هذا اللي جاي عليك قريب</p>
+      </div>
+    </div>
+    <div id="dash-content"></div>
+  </div>
+  <button class="fab" onclick="openModal()">+ إضافة تذكير</button>
+</div>
+
+<!-- ===================== MODAL: ADD REMINDER ===================== -->
+<div class="overlay" id="modal-overlay">
+  <div class="modal">
+    <h3>إضافة تذكير جديد</h3>
+    <div class="field">
+      <label>العنوان</label>
+      <input type="text" id="f-title" placeholder="مثلاً: تجديد تأمين السيارة">
+    </div>
+    <div class="field">
+      <label>التاريخ</label>
+      <input type="date" id="f-date">
+    </div>
+    <div class="field">
+      <label>التكرار</label>
+      <select id="f-recur">
+        <option value="once">مرة واحدة</option>
+        <option value="monthly">شهري</option>
+        <option value="yearly">سنوي</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>التصنيف</label>
+      <select id="f-cat">
+        <option value="car">سيارة</option>
+        <option value="health">صحة</option>
+        <option value="docs">وثائق</option>
+        <option value="subs">اشتراكات</option>
+        <option value="family">عائلة</option>
+        <option value="work">عمل</option>
+        <option value="other">أخرى</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+      <button class="btn btn-primary" onclick="addReminder()">حفظ التذكير</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== DATA ===================== */
+const ROLES = [
+  { id:'student', ic:'🎓', name:'طالب', desc:'رسوم، تسجيل مواد', templates:[
+    {title:'دفع رسوم الفصل الدراسي', days:20, cat:'work'},
+    {title:'تجديد البطاقة الجامعية', days:90, cat:'docs'},
+  ]},
+  { id:'employee', ic:'💼', name:'موظف', desc:'تأمين، إجازات', templates:[
+    {title:'تجديد التأمين الصحي', days:45, cat:'health'},
+    {title:'مراجعة تقييم الأداء السنوي', days:120, cat:'work'},
+  ]},
+  { id:'driver', ic:'🚗', name:'صاحب سيارة', desc:'فحص، رخصة، تأمين', templates:[
+    {title:'الفحص الدوري للسيارة', days:15, cat:'car'},
+    {title:'تجديد رخصة القيادة', days:60, cat:'docs'},
+    {title:'تجديد تأمين السيارة', days:30, cat:'car'},
+  ]},
+  { id:'parent', ic:'👨‍👩‍👧', name:'أب / أم', desc:'تطعيمات، مدرسة', templates:[
+    {title:'موعد تطعيم الطفل', days:10, cat:'family'},
+    {title:'تجديد جواز سفر الطفل', days:100, cat:'docs'},
+  ]},
+  { id:'owner', ic:'🏪', name:'صاحب عمل صغير', desc:'رخصة، ضرائب', templates:[
+    {title:'تجديد السجل التجاري', days:40, cat:'work'},
+    {title:'تقديم الإقرار الضريبي', days:70, cat:'work'},
+  ]},
+];
+
+const CAT_LABELS = { car:'سيارة', health:'صحة', docs:'وثائق', subs:'اشتراكات', family:'عائلة', work:'عمل', other:'أخرى' };
+
+let selectedRoles = new Set();
+let reminders = [];
+
+/* ===================== NAVIGATION ===================== */
+function goTo(screen){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + screen).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+/* ===================== ONBOARDING ===================== */
+function renderRoleGrid(){
+  const grid = document.getElementById('role-grid');
+  grid.innerHTML = '';
+  ROLES.forEach(role => {
+    const card = document.createElement('div');
+    card.className = 'role-card' + (selectedRoles.has(role.id) ? ' selected' : '');
+    card.innerHTML = `
+      <span class="ic">${role.ic}</span>
+      <div>
+        <div class="name">${role.name}</div>
+        <div class="desc">${role.desc}</div>
+      </div>
+      <div class="role-check">✓</div>
+    `;
+    card.onclick = () => {
+      if(selectedRoles.has(role.id)) selectedRoles.delete(role.id);
+      else selectedRoles.add(role.id);
+      renderRoleGrid();
+    };
+    grid.appendChild(card);
+  });
+}
+
+function finishOnboarding(){
+  if(selectedRoles.size === 0){
+    alert('اختر وضع واحد على الأقل عشان نجهزلك تذكيرات مناسبة.');
+    return;
+  }
+  reminders = [];
+  const today = new Date();
+  ROLES.forEach(role => {
+    if(selectedRoles.has(role.id)){
+      role.templates.forEach(t => {
+        const d = new Date(today);
+        d.setDate(d.getDate() + t.days);
+        reminders.push({
+          id: Math.random().toString(36).slice(2),
+          title: t.title,
+          date: d.toISOString().slice(0,10),
+          cat: t.cat,
+          recur: 'yearly'
+        });
+      });
+    }
+  });
+  goTo('dashboard');
+  renderDashboard();
+}
+
+/* ===================== DASHBOARD ===================== */
+function daysUntil(dateStr){
+  const d = new Date(dateStr);
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  return Math.round((d - today) / (1000*60*60*24));
+}
+
+function urgencyClass(days){
+  if(days <= 14) return 'urgent';
+  if(days <= 45) return 'soon';
+  return 'later';
+}
+
+function renderDashboard(){
+  const content = document.getElementById('dash-content');
+  const sub = document.getElementById('dash-sub');
+
+  if(reminders.length === 0){
+    content.innerHTML = `<div class="empty">ما عندك أي تذكيرات بعد. اضغط "+ إضافة تذكير" تبدأ.</div>`;
+    sub.textContent = 'لوحتك فاضية حاليًا';
+    return;
+  }
+
+  const sorted = [...reminders].sort((a,b) => daysUntil(a.date) - daysUntil(b.date));
+  const urgent = sorted.filter(r => daysUntil(r.date) <= 14);
+  const soon = sorted.filter(r => { const d = daysUntil(r.date); return d > 14 && d <= 45; });
+  const later = sorted.filter(r => daysUntil(r.date) > 45);
+
+  sub.textContent = `${reminders.length} تذكير نشط — ${urgent.length} منها عاجل`;
+
+  function renderGroup(label, list){
+    if(list.length === 0) return '';
+    let html = `<div class="group-label">${label}</div><div class="reminder-list">`;
+    list.forEach(r => {
+      const days = daysUntil(r.date);
+      const cls = urgencyClass(days);
+      const daysLabel = days < 0 ? `متأخر ${Math.abs(days)} يوم` : days === 0 ? 'اليوم' : `خلال ${days} يوم`;
+      html += `
+        <div class="reminder-card">
+          <span class="urgency-dot ${cls}"></span>
+          <div class="r-info">
+            <div class="r-title">${r.title}</div>
+            <div class="r-meta">${new Date(r.date).toLocaleDateString('ar-EG', {day:'numeric', month:'long', year:'numeric'})}</div>
+          </div>
+          <span class="r-cat">${CAT_LABELS[r.cat] || r.cat}</span>
+          <span class="r-days mono">${daysLabel}</span>
+          <button class="r-del" onclick="deleteReminder('${r.id}')">✕</button>
+        </div>`;
+    });
+    html += `</div>`;
+    return html;
+  }
+
+  content.innerHTML =
+    renderGroup('عاجل — خلال أسبوعين', urgent) +
+    renderGroup('قريبًا — خلال شهر ونصف', soon) +
+    renderGroup('لاحقًا', later);
+}
+
+function deleteReminder(id){
+  reminders = reminders.filter(r => r.id !== id);
+  renderDashboard();
+}
+
+/* ===================== ADD MODAL ===================== */
+function openModal(){
+  document.getElementById('f-title').value = '';
+  document.getElementById('f-date').value = '';
+  document.getElementById('f-recur').value = 'once';
+  document.getElementById('f-cat').value = 'other';
+  document.getElementById('modal-overlay').classList.add('active');
+}
+function closeModal(){
+  document.getElementById('modal-overlay').classList.remove('active');
+}
+function addReminder(){
+  const title = document.getElementById('f-title').value.trim();
+  const date = document.getElementById('f-date').value;
+  const recur = document.getElementById('f-recur').value;
+  const cat = document.getElementById('f-cat').value;
+  if(!title || !date){
+    alert('لازم تعبي العنوان والتاريخ.');
+    return;
+  }
+  reminders.push({ id: Math.random().toString(36).slice(2), title, date, recur, cat });
+  closeModal();
+  renderDashboard();
+}
+
+/* ===================== INIT ===================== */
+renderRoleGrid();
+</script>
+</body>
+</html>
